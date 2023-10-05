@@ -8,9 +8,12 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     var forceTapOnCenter: Bool = false
     var configuration: ARConfiguration? = nil
     
+    var capture: ARCapture? = nil
+    
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger) {
         self.sceneView = ARSCNView(frame: frame)
         self.channel = FlutterMethodChannel(name: "arkit_\(viewId)", binaryMessenger: msg)
+        self.capture = ARCapture(view: self.sceneView)
         
         super.init()
         
