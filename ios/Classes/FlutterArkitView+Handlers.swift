@@ -244,8 +244,14 @@ extension FlutterArkitView {
    }
 
    func onGetSnapshot(_ result: FlutterResult) {
-        let snapshotImage = sceneView.snapshot()
-        if let bytes = snapshotImage.pngData() {
+        // Instead of Native iOS snapshot to ARCapture class snapshot
+        // let snapshotImage = sceneView.snapshot()
+        let snapshotImage = capture?.image()
+        if(snapshotImage == nil) {
+            result(nil)
+            return
+        }
+        if let bytes = snapshotImage!.pngData() {
             let data = FlutterStandardTypedData(bytes:bytes)
             result(data)
         } else {
