@@ -735,9 +735,19 @@ class ARKitController {
     return vector3;
   }
 
-  Future<ImageProvider> snapshot() async {
-    final result = await _channel.invokeMethod<Uint8List>('snapshot');
+  Future<ImageProvider> snapshot({double? compressionQuality}) async {
+    final result = await _channel.invokeMethod<Uint8List>('snapshot', {"compressionQuality": compressionQuality});
     return MemoryImage(result!);
+  }
+
+  Future<bool> captureStart() async {
+    final result = await _channel.invokeMethod<bool>('captureStart');
+    return result ?? false;
+  }
+
+  Future<bool> captureStop() async {
+    final result = await _channel.invokeMethod<bool>('captureStop');
+    return result ?? false;
   }
 
   Future<Vector3?> cameraPosition() async {

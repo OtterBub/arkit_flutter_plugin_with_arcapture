@@ -120,7 +120,15 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
             onCameraEulerAngles(result)
             break
         case "snapshot":
-            onGetSnapshot(result)
+            onGetSnapshot(arguments, result)
+            break
+        case "captureStart":
+            let resultBool:Bool = capture?.start() != nil
+            result(resultBool)
+            break
+        case "captureStop":
+            let resultBool:Bool = capture?.stop() != nil
+            result(resultBool)
             break
         case "cameraPosition":
             onGetCameraPosition(result)
@@ -132,6 +140,7 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     }
     
     func onDispose(_ result: FlutterResult) {
+        capture?.stop()
         sceneView.session.pause()
         self.channel.setMethodCallHandler(nil)
         result(nil)
