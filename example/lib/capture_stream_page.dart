@@ -18,7 +18,7 @@ class _CaptureStreamPageState extends State<CaptureStreamPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
-        title: const Text('Snapshot'),
+        title: const Text('CaptureStream'),
       ),
       body: Container(child: testViewer()));
 }
@@ -33,7 +33,7 @@ class testViewer extends StatefulWidget {
 class _testViewerState extends State<testViewer> {
   ARKitController? arkitController;
   List<ImageProvider> imageList = [];
-  bool isStart = false;
+  bool isStartReady = true;
   bool isDispose = false;
 
   @override
@@ -44,11 +44,11 @@ class _testViewerState extends State<testViewer> {
 
   int indexCount = 0;
   Future<bool> updateFrame() async {
-    await Future.delayed(Duration(milliseconds: 9));
+    await Future.delayed(Duration(milliseconds: 15));
     if (isDispose) return false;
     if (arkitController != null) {
       try {
-        var image = (await arkitController!.snapshot()) as MemoryImage;
+        var image = (await arkitController!.snapshot(compressionQuality: 0.5)) as MemoryImage;
         if (imageList.length < 3) {
           imageList.add(image);
         } else {
@@ -72,7 +72,7 @@ class _testViewerState extends State<testViewer> {
     return Stack(children: [
       ARKitSceneView(onARKitViewCreated: onARKitViewCreated),
       SizedBox.fromSize(
-          size: Size(500, 500),
+          size: Size(1000, 1000),
           child: imageList.length < 3
               ? ColoredBox(color: Colors.black)
               : IndexedStack(
@@ -83,13 +83,33 @@ class _testViewerState extends State<testViewer> {
                     Image(image: imageList[2]),
                   ],
                 )),
-      FloatingActionButton.small(
-        onPressed: () {
-          setState(() {
-            isStart = !isStart;
-          });
-        },
-        child: Text(isStart ? "Stop" : "Start"),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FloatingActionButton.large(
+            onPressed: () {
+              isStartReady ? arkitController?.captureStart() : arkitController?.captureStop();
+              setState(() {
+                isStartReady = !isStartReady;
+              });
+            },
+            child: Text(isStartReady ? "Start" : "Stop"),
+          ),
+          Align(
+            alignment: Alignment.topRight,
+            child: Padding(
+              padding: const EdgeInsets.all(50.0),
+              child: Column(
+                children: [
+                  LinearProgressIndicator(),
+                  RefreshProgressIndicator(),
+                  CircularProgressIndicator.adaptive(),
+                  CircularProgressIndicator()
+                ],
+              ),
+            ),
+          )
+        ],
       ),
     ]);
   }
@@ -105,48 +125,5 @@ class _testViewerState extends State<testViewer> {
     arkitController?.dispose();
     arkitController = null;
     super.dispose();
-  }
-}
-
-class SnapshotPreview extends StatefulWidget {
-  const SnapshotPreview({
-    Key? key,
-    required this.imageProvider,
-    required this.arKitController,
-  }) : super(key: key);
-
-  final ImageProvider imageProvider;
-  final ARKitController arKitController;
-
-  @override
-  State<SnapshotPreview> createState() => _SnapshotPreviewState();
-}
-
-class _SnapshotPreviewState extends State<SnapshotPreview> {
-  ARKitController get controller => widget.arKitController;
-  late ImageProvider image;
-
-  int count = 0;
-
-  @override
-  void initState() {
-    image = widget.imageProvider;
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback(updateframe);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Image Preview'),
-      ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          Image(image: image),
-        ],
-      ),
-    );
   }
 }
