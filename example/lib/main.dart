@@ -1,5 +1,6 @@
 import 'package:arkit_plugin_example/body_tracking_page.dart';
 import 'package:arkit_plugin_example/camera_position_scene.dart';
+import 'package:arkit_plugin_example/capture_stream_page.dart';
 import 'package:arkit_plugin_example/check_support_page.dart';
 import 'package:arkit_plugin_example/custom_animation_page.dart';
 import 'package:arkit_plugin_example/custom_object_page.dart';
@@ -198,6 +199,13 @@ class MyApp extends StatelessWidget {
         Icons.camera,
         () => Navigator.of(context)
             .push<void>(MaterialPageRoute(builder: (c) => SnapshotScenePage())),
+      ),
+      Sample(
+        'Capture Stream',
+        'New Snapshot Capture Stream Page',
+        Icons.camera_roll,
+            () => Navigator.of(context)
+            .push<void>(MaterialPageRoute(builder: (c) => CaptureStreamPage())),
       ),
       Sample(
         'Camera position',
