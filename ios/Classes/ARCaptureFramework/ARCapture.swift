@@ -23,6 +23,8 @@ public protocol ARCaptureDelegate: class {
 @available(iOS 13.0, *)
 open class ARCapture {
     
+    var lastStreamFrame: ARCaptureFrame? = nil
+    
     public enum Status: Int {
         case ready
         /// The current recorder is recording.
@@ -51,7 +53,7 @@ open class ARCapture {
     
     var status: Status = .ready
     private var audioPermissions: AudioPermissions = .unknown
-    private var recordAudio: Bool = true
+    private var recordAudio: Bool = false
     
     private var assetCreator: ARAssetCreator?
     private var frameGenerator: ARFrameGenerator?
@@ -165,6 +167,10 @@ open class ARCapture {
     
     /// Capture image
     public func image(captureType: ARFrameGenerator.CaptureType? = nil) -> UIImage? {
+        if status == .recording {
+            guard let buffer = self.lastStreamFrame?.1 else { return nil }
+            return UIImage(ciImage: CIImage(cvPixelBuffer: buffer))
+        }
         let type: ARFrameGenerator.CaptureType = captureType ?? (ARCapture.Orientation.isPortrait ? .renderOriginal : .imageCapture)
         let frameGenerator = ARFrameGenerator(captureType: type)
         guard let frame = frameGenerator.getFrame(from: view, renderer: renderer, time: CACurrentMediaTime()), let buffer = frame.1 else { return nil }
@@ -226,6 +232,7 @@ open class ARCapture {
         guard status.isCapturing() else { return }
         let mediaTime = CACurrentMediaTime()
         guard let frame = frameGenerator?.getFrame(from: view, renderer: renderer, time: mediaTime), let buffer = frame.1 else { return }
+        lastStreamFrame = frame
         queue.sync { [weak self] in
             guard self != nil else { return }
             var time: CMTime { return CMTime(seconds: mediaTime, preferredTimescale: 1000000) }

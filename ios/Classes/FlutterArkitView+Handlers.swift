@@ -243,15 +243,19 @@ extension FlutterArkitView {
         }
    }
 
-   func onGetSnapshot(_ result: FlutterResult) {
+    func onGetSnapshot(_ arguments: Dictionary<String, Any>?, _ result: FlutterResult) {
         // Instead of Native iOS snapshot to ARCapture class snapshot
         // let snapshotImage = sceneView.snapshot()
-        let snapshotImage = capture?.image()
+        
+        let compressionQuality: Double = arguments?["compressionQuality"] as? Double ?? 0.8
+        let snapshotImage = capture?.image(captureType: ARFrameGenerator.CaptureType.imageCapture)
+
         if(snapshotImage == nil) {
             result(nil)
             return
         }
-        if let bytes = snapshotImage!.pngData() {
+
+        if let bytes = snapshotImage!.jpegData(compressionQuality: compressionQuality) {
             let data = FlutterStandardTypedData(bytes:bytes)
             result(data)
         } else {
