@@ -1,19 +1,20 @@
 import Foundation
+import RealityKit
 import ARKit
 
 class FlutterArkitView: NSObject, FlutterPlatformView {
     let sceneView: ARSCNView
+    let arView: ARView
     let channel: FlutterMethodChannel
     
     var forceTapOnCenter: Bool = false
     var configuration: ARConfiguration? = nil
     
-    var capture: ARCapture? = nil
     
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger) {
         self.sceneView = ARSCNView(frame: frame)
+        self.arView = ARView(frame: frame)
         self.channel = FlutterMethodChannel(name: "arkit_\(viewId)", binaryMessenger: msg)
-        self.capture = ARCapture(view: self.sceneView)
         
         super.init()
         
@@ -123,12 +124,10 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
             onGetSnapshot(arguments, result)
             break
         case "captureStart":
-            let resultBool:Bool = capture?.start() != nil
-            result(resultBool)
+            result(false)
             break
         case "captureStop":
-            let resultBool:Bool = capture?.stop() != nil
-            result(resultBool)
+            result(false)
             break
         case "cameraPosition":
             onGetCameraPosition(result)
@@ -140,7 +139,6 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     }
     
     func onDispose(_ result: FlutterResult) {
-        capture?.stop()
         sceneView.session.pause()
         self.channel.setMethodCallHandler(nil)
         result(nil)
