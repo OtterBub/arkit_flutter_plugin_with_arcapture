@@ -242,22 +242,77 @@ extension FlutterArkitView {
             result(nil)
         }
    }
+    
+    enum AuthResult {
+        case success(Bool), failure(Error)
+    }
+    
+    func snapshotRun(compressionQuality: CGFloat) async throws -> Data? {
+        NSLog("snapshotRun function -- START")
+        var result: Data?
+        await self.arView?.snapshot(saveToHDR: false) {
+            (image) in
+            result = image?.jpegData(compressionQuality: compressionQuality)
+            NSLog("arView?.snapshot run \(String(describing: result))")
+        }
+        NSLog("snapshotRun function -- END")
+        return result
+    }
 
     func onGetSnapshot(_ arguments: Dictionary<String, Any>?, _ result: FlutterResult) {
+        if self.capturing {
+            if self.bytes != nil {
+                let data = FlutterStandardTypedData(bytes:bytes!)
+                result(data)
+            } else {
+                result(nil)
+            }
+            return
+        }
+        
+        let arFrame = self.arView?.frame
+        
+        if arFrame == nil {
+            result(nil)
+            return
+        }
+        
+        if arFrame!.height <= 0 && arFrame!.width <= 0 {
+            result(nil)
+            return
+        }
+        
+        
+        
+        self.capturing = true
         
         let compressionQuality: Double = arguments?["compressionQuality"] as? Double ?? 0.8
-        let snapshotImage = self.sceneView.snapshot()
-
-        if let bytes = snapshotImage.jpegData(compressionQuality: compressionQuality) {
-            let data = FlutterStandardTypedData(bytes:bytes)
+        
+        if self.arView == nil {
+            result(nil)
+            return
+        }
+        
+        
+        
+        self.arView?.snapshot(saveToHDR: false) {
+            [self] (image) in
+            self.bytes = image?.jpegData(compressionQuality: compressionQuality)
+            self.capturing = false
+        }
+        
+        if self.bytes != nil {
+            let data = FlutterStandardTypedData(bytes:bytes!)
             result(data)
         } else {
             result(nil)
         }
+        
+        return
     }
     
     func onGetCameraPosition(_ result: FlutterResult) {
-        if let frame: ARFrame = sceneView.session.currentFrame {
+        if let frame: ARFrame = self.arView?.session.currentFrame {
             let cameraPosition = frame.camera.transform.columns.3
             let res = serializeArray(cameraPosition)
             result(res)

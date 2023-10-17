@@ -3,12 +3,18 @@ import RealityKit
 import ARKit
 
 class FlutterArkitView: NSObject, FlutterPlatformView {
+    
     let sceneView: ARSCNView
-    let arView: ARView
+    let arView: ARView?
     let channel: FlutterMethodChannel
     
     var forceTapOnCenter: Bool = false
     var configuration: ARConfiguration? = nil
+    var configurationRealityKit: ARWorldTrackingConfiguration? = nil
+    
+    var bytes: Data? = nil
+    
+    var capturing: Bool = false
     
     
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger) {
@@ -22,12 +28,12 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
         self.channel.setMethodCallHandler(self.onMethodCalled)
     }
     
-    func view() -> UIView { return sceneView }
+    func view() -> UIView { return self.arView ?? UIView() }
     
     func onMethodCalled(_ call: FlutterMethodCall, _ result: FlutterResult) {
         let arguments = call.arguments as? Dictionary<String, Any>
         
-        if configuration == nil && call.method != "init" {
+        if configurationRealityKit == nil && call.method != "init" {
             logPluginError("plugin is not initialized properly", toChannel: channel)
             result(nil)
             return
@@ -140,6 +146,8 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     
     func onDispose(_ result: FlutterResult) {
         sceneView.session.pause()
+        arView?.session.pause()
+        self.configurationRealityKit = nil
         self.channel.setMethodCallHandler(nil)
         result(nil)
     }

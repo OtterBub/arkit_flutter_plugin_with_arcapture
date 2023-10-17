@@ -72,6 +72,59 @@ extension FlutterArkitView: ARSCNViewDelegate {
         self.channel.invokeMethod("updateAtTime", arguments: params)
     }
     
+    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
+        if #available(iOS 13.4, *) {
+            guard let meshAnchor = anchor as? ARMeshAnchor else {
+                return nil
+            }
+            let geometry = createGeometryFromAnchor(meshAnchor: meshAnchor)
+            //apply occlusion material
+            geometry.firstMaterial?.colorBufferWriteMask = []
+            geometry.firstMaterial?.writesToDepthBuffer = true
+            geometry.firstMaterial?.readsFromDepthBuffer = true
+            
+            
+            let node = SCNNode(geometry: geometry)
+            //change rendering order so it renders before  our virtual object
+            node.renderingOrder = -1
+            return node
+        } else {
+            // Fallback on earlier versions
+            return nil
+        }
+        
+    }
+    
+    // Taken from https://developer.apple.com/forums/thread/130599
+    @available(iOS 13.4, *)
+    func createGeometryFromAnchor(meshAnchor: ARMeshAnchor) -> SCNGeometry {
+        let meshGeometry = meshAnchor.geometry
+        let vertices = meshGeometry.vertices
+        let normals = meshGeometry.normals
+        let faces = meshGeometry.faces
+        
+        // use the MTL buffer that ARKit gives us
+        let vertexSource = SCNGeometrySource(buffer: vertices.buffer, vertexFormat: vertices.format, semantic: .vertex, vertexCount: vertices.count, dataOffset: vertices.offset, dataStride: vertices.stride)
+        
+        let normalsSource = SCNGeometrySource(buffer: normals.buffer, vertexFormat: normals.format, semantic: .normal, vertexCount: normals.count, dataOffset: normals.offset, dataStride: normals.stride)
+        // Copy bytes as we may use them later
+        let faceData = Data(bytes: faces.buffer.contents(), count: faces.buffer.length)
+        
+        // create the geometry element
+        let geometryElement = SCNGeometryElement(data: faceData, primitiveType: primitiveType(type: faces.primitiveType), primitiveCount: faces.count, bytesPerIndex: faces.bytesPerIndex)
+        
+        return SCNGeometry(sources: [vertexSource, normalsSource], elements: [geometryElement])
+    }
+
+    @available(iOS 13.4, *)
+    func primitiveType(type: ARGeometryPrimitiveType) -> SCNGeometryPrimitiveType {
+            switch type {
+                case .line: return .line
+                case .triangle: return .triangles
+            default : return .triangles
+            }
+    }
+    
     fileprivate func prepareParamsForAnchorEvent(_ node: SCNNode, _ anchor: ARAnchor) -> Dictionary<String, Any> {
         var serializedAnchor = serializeAnchor(anchor)
         serializedAnchor["nodeName"] = node.name
