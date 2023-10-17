@@ -1,16 +1,51 @@
 import ARKit
+import SceneKit.ModelIO
+import RealityKit
 
 extension FlutterArkitView {
     func onAddNode(_ arguments: Dictionary<String, Any>) {
+        NSLog("onAddNode -- START")
         let geometryArguments = arguments["geometry"] as? Dictionary<String, Any>
         let geometry = createGeometry(geometryArguments, withDevice: sceneView.device)
         let node = createNode(geometry, fromDict: arguments, forDevice: sceneView.device)
         if let parentNodeName = arguments["parentNodeName"] as? String {
             let parentNode = sceneView.scene.rootNode.childNode(withName: parentNodeName, recursively: true)
             parentNode?.addChildNode(node)
+            
         } else {
             sceneView.scene.rootNode.addChildNode(node)
         }
+        
+        if node.geometry == nil {
+            return
+        }
+        
+        let mesh = MDLMesh(scnGeometry: node.geometry!)
+        let asset = MDLAsset()
+        asset.add(mesh)
+        
+        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        let name = "obj_" + (node.name ?? "node")
+        let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ".usdc")
+        do {
+            let _:() = try asset.export(to: exportUrl)
+        } catch {
+            NSLog("onAddNode export is error \(error)")
+        }
+        
+        let objEntity = try? Entity.load(contentsOf: exportUrl)
+        if objEntity == nil {
+            NSLog("onAddNode objEntity is nil \(String(describing: objEntity))")
+        }
+        
+        entityLoop(entity: objEntity!, material: SimpleMaterial())
+        
+        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.2, 0.2)))
+        anchor.addChild(objEntity!)
+        
+        self.arView!.scene.anchors.append(anchor)
+
+        NSLog("onAddNode -- END")
     }
   
     func onUpdateNode(_ arguments: Dictionary<String, Any>) {

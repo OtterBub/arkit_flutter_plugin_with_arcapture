@@ -29,7 +29,7 @@ extension FlutterArkitView {
     
     func entityLoop(entity: Entity, depth: Int = 0, material: SimpleMaterial) -> Entity {
         for (index, comp) in entity.children.enumerated() {
-//            NSLog("Loop [\(index)] is \(comp)")
+            NSLog("Loop [\(index)] is \(comp)")
 
             var modelComp: ModelComponent? = comp.components[ModelComponent.self]
             if modelComp != nil {
@@ -69,7 +69,8 @@ extension FlutterArkitView {
         
         // Test USDZ
 //        let url = Bundle.main.url(forResource: "models.scnassets/NuttellaLatte", withExtension: "usdz")
-        let url = Bundle.main.url(forResource: "models.scnassets/Boat.obj", withExtension: nil)
+//        let url = Bundle.main.url(forResource: "models.scnassets/Boat.obj", withExtension: nil)
+        let url = Bundle.main.url(forResource: "models.scnassets/dash.dae", withExtension: nil)
 //        let url = Bundle.main.url(forResource: "models.scnassets/dash", withExtension: "dae")
         
         let mdlAsset = MDLAsset(url: url!)
@@ -91,11 +92,11 @@ extension FlutterArkitView {
             NSLog("objEntity is nil \(String(describing: objEntity))")
             return
         }
-        
-        var modelComp: ModelComponent = objEntity!.children[0].children[0].components[ModelComponent.self] as! ModelComponent
-        
-        modelComp.materials.append(material)
-        objEntity!.children[0].children[0].components.set(modelComp)
+//        
+//        var modelComp: ModelComponent = objEntity!.children[0].children[0].components[ModelComponent.self] as! ModelComponent
+//        
+//        modelComp.materials.append(material)
+//        objEntity!.children[0].children[0].components.set(modelComp)
         
         let newEntity = entityLoop(entity: objEntity!, material: material)
         
