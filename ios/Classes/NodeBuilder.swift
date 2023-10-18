@@ -1,6 +1,6 @@
 import ARKit
 
-func createNode(_ geometry: SCNGeometry?, fromDict dict: Dictionary<String, Any>, forDevice device: MTLDevice?) -> SCNNode {
+func createNode(_ geometry: SCNGeometry?, fromDict dict: Dictionary<String, Any>, forDevice device: MTLDevice? = nil) -> SCNNode {
     let dartType = dict["dartType"] as! String
     
     let node = dartType == "ARKitReferenceNode"

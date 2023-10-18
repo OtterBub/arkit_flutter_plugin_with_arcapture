@@ -4,8 +4,8 @@ import ARKit
 
 class FlutterArkitView: NSObject, FlutterPlatformView {
     
-    let sceneView: ARSCNView
-    let arView: ARView?
+//    let sceneView: ARSCNView
+    var arView: ARView?
     let channel: FlutterMethodChannel
     
     var forceTapOnCenter: Bool = false
@@ -16,15 +16,19 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     
     var capturing: Bool = false
     
+    var frame: CGRect = CGRect()
+    
     
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger) {
-        self.sceneView = ARSCNView(frame: frame)
+//        self.sceneView = ARSCNView(frame: frame)
+        self.frame = frame
         self.arView = ARView(frame: frame)
         self.channel = FlutterMethodChannel(name: "arkit_\(viewId)", binaryMessenger: msg)
         
         super.init()
         
-        self.sceneView.delegate = self
+//        self.sceneView.delegate = self
+        self.arView?.session.delegate = self
         self.channel.setMethodCallHandler(self.onMethodCalled)
     }
     
@@ -49,6 +53,7 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
             result(nil)
             break
         case "onUpdateNode":
+            // TODO: need porting to arView
             onUpdateNode(arguments!)
             result(nil)
             break
@@ -145,8 +150,14 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     }
     
     func onDispose(_ result: FlutterResult) {
-        sceneView.session.pause()
+//        sceneView.session.pause()
         arView?.session.pause()
+//        arView?.session.delegate = nil
+//        arView?.scene.anchors.removeAll()
+//        arView?.removeFromSuperview()
+//        arView?.window?.resignKey()
+//        arView = nil
+        
         self.configurationRealityKit = nil
         self.channel.setMethodCallHandler(nil)
         result(nil)

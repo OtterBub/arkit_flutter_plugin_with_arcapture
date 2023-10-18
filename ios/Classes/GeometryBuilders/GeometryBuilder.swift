@@ -1,6 +1,6 @@
 import ARKit
 
-func createGeometry(_ arguments: Dictionary<String, Any>?, withDevice device: MTLDevice?) -> SCNGeometry? {
+func createGeometry(_ arguments: Dictionary<String, Any>?, withDevice device: MTLDevice? = nil) -> SCNGeometry? {
   if let arguments = arguments {
     
     var geometry: SCNGeometry?
@@ -42,7 +42,7 @@ func createGeometry(_ arguments: Dictionary<String, Any>?, withDevice device: MT
       break
     case "ARKitFace":
       #if !DISABLE_TRUEDEPTH_API
-      geometry = createFace(device)
+//      geometry = createFace(device)
       #else
       // error
       #endif

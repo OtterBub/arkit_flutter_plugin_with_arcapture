@@ -4,6 +4,11 @@ import RealityKit
 extension FlutterArkitView {
     func initalize(_ arguments: Dictionary<String, Any>, _ result:FlutterResult) {
         
+        if self.arView == nil {
+            self.arView = ARView(frame: self.frame)
+            self.arView?.session.delegate = self
+        }
+        
         initalizeGesutreRecognizers(arguments)
         
         self.configurationRealityKit = ARWorldTrackingConfiguration()
@@ -24,25 +29,6 @@ extension FlutterArkitView {
         }
     }
     
-    func entityEditMaterialLoop(entity: Entity, depth: Int = 0, material: SimpleMaterial) -> Entity {
-        for (index, comp) in entity.children.enumerated() {
-            NSLog("Loop [\(index)] is \(comp)")
-
-            var modelComp: ModelComponent? = comp.components[ModelComponent.self]
-            if modelComp != nil {
-                if modelComp!.materials.isEmpty {
-                    modelComp!.materials.append(material)
-                }
-//                modelComp!.materials.removeAll()
-                entity.children[index].components.set(modelComp!)
-            }
-            
-           
-            var _ = entityEditMaterialLoop(entity: comp, material: material)
-            
-        }
-        return entity
-    }
     
     func parseDebugOptions(_ arguments: Dictionary<String, Any>) -> SCNDebugOptions {
         var options = ARSCNDebugOptions().rawValue

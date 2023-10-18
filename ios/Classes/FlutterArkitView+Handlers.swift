@@ -6,21 +6,21 @@ extension FlutterArkitView {
     func onAddNode(_ arguments: Dictionary<String, Any>) {
         NSLog("onAddNode -- START")
         let geometryArguments = arguments["geometry"] as? Dictionary<String, Any>
-        let geometry = createGeometry(geometryArguments, withDevice: sceneView.device)
-        let node = createNode(geometry, fromDict: arguments, forDevice: sceneView.device)
-        if let parentNodeName = arguments["parentNodeName"] as? String {
-            let parentNode = sceneView.scene.rootNode.childNode(withName: parentNodeName, recursively: true)
-            parentNode?.addChildNode(node)
-            
-        } else {
-            sceneView.scene.rootNode.addChildNode(node)
-        }
+        let geometry = createGeometry(geometryArguments)
+        let node = createNode(geometry, fromDict: arguments)
+//        if let parentNodeName = arguments["parentNodeName"] as? String {
+//            let parentNode = sceneView.scene.rootNode.childNode(withName: parentNodeName, recursively: true)
+//            parentNode?.addChildNode(node)
+//            
+//        } else {
+//            sceneView.scene.rootNode.addChildNode(node)
+//        }
         
-        if node.geometry == nil {
+        if geometry == nil {
             return
         }
         
-        let mesh = MDLMesh(scnGeometry: node.geometry!)
+        let mesh = MDLMesh(scnGeometry: geometry!)
         let asset = MDLAsset()
         asset.add(mesh)
         
@@ -39,23 +39,30 @@ extension FlutterArkitView {
             NSLog("onAddNode objEntity is nil \(String(describing: objEntity))")
         }
         
-        let newEntity = entityEditMaterialLoop(entity: objEntity!, material: SimpleMaterial(
-            color: UIColor(
-                red: CGFloat.random(in: 0...1),
-                green: CGFloat.random(in: 0...1),
-                blue: CGFloat.random(in: 0...1),
-                alpha: 1.0
-            ),
-            roughness: 0.5,
-            isMetallic: Bool.random()
-        ))
+        let anchor = AnchorEntity()
         
+        if #available(iOS 15.0, *) {
+            let newEntity = RealityKitUtil.entityEditMaterialLoop(entity: objEntity!, material: SimpleMaterial(
+                color: UIColor(
+                    red: CGFloat.random(in: 0...1),
+                    green: CGFloat.random(in: 0...1),
+                    blue: CGFloat.random(in: 0...1),
+                    alpha: 1.0
+                ),
+                roughness: 0.5,
+                isMetallic: Bool.random()
+            ))
         newEntity.transform.matrix = simd_float4x4(node.transform)
+        anchor.addChild(newEntity)
+        } else {
+            // Fallback on earlier versions
+            objEntity?.transform.matrix = simd_float4x4(node.transform)
+            anchor.addChild(objEntity!)
+        }
+        
         
 //        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.2, 0.2)))
 
-        let anchor = AnchorEntity()
-        anchor.addChild(newEntity)
 //        anchor.transform.matrix = simd_float4x4(node.transform)
         
         
@@ -69,18 +76,18 @@ extension FlutterArkitView {
           logPluginError("nodeName deserialization failed", toChannel: channel)
           return
       }
-      guard let node = sceneView.scene.rootNode.childNode(withName: nodeName, recursively: true) else {
-          logPluginError("node not found", toChannel: channel)
-          return
-      }
-      if let geometryArguments = arguments["geometry"] as? Dictionary<String, Any>,
-         let geometry = createGeometry(geometryArguments, withDevice: sceneView.device) {
-          node.geometry = geometry
-      }
-      if let materials = arguments["materials"] as? Array<Dictionary<String, Any>> {
-          node.geometry?.materials = parseMaterials(materials)
-      }
-      updateNode(node, fromDict: arguments, forDevice: sceneView.device)
+//      guard let node = sceneView.scene.rootNode.childNode(withName: nodeName, recursively: true) else {
+//          logPluginError("node not found", toChannel: channel)
+//          return
+//      }
+//      if let geometryArguments = arguments["geometry"] as? Dictionary<String, Any>,
+//         let geometry = createGeometry(geometryArguments, withDevice: sceneView.device) {
+//          node.geometry = geometry
+//      }
+//      if let materials = arguments["materials"] as? Array<Dictionary<String, Any>> {
+//          node.geometry?.materials = parseMaterials(materials)
+//      }
+//      updateNode(node, fromDict: arguments, forDevice: sceneView.device)
     }
   
     func onRemoveNode(_ arguments: Dictionary<String, Any>) {
@@ -88,8 +95,8 @@ extension FlutterArkitView {
             logPluginError("nodeName deserialization failed", toChannel: channel)
             return
         }
-        let node = sceneView.scene.rootNode.childNode(withName: nodeName, recursively: true)
-        node?.removeFromParentNode()
+//        let node = sceneView.scene.rootNode.childNode(withName: nodeName, recursively: true)
+//        node?.removeFromParentNode()
     }
   
     func onRemoveAnchor(_ arguments: Dictionary<String, Any>) {
@@ -97,9 +104,9 @@ extension FlutterArkitView {
             logPluginError("anchorIdentifier deserialization failed", toChannel: channel)
             return
         }
-        if let anchor = sceneView.session.currentFrame?.anchors.first(where:{ $0.identifier.uuidString == anchorIdentifier }) {
-            sceneView.session.remove(anchor: anchor)
-        }
+//        if let anchor = sceneView.session.currentFrame?.anchors.first(where:{ $0.identifier.uuidString == anchorIdentifier }) {
+//            sceneView.session.remove(anchor: anchor)
+//        }
     }
     
     func onGetNodeBoundingBox(_ arguments: Dictionary<String, Any>, _ result:FlutterResult) {
@@ -108,11 +115,11 @@ extension FlutterArkitView {
             result(nil)
             return
         }
-        let geometry = createGeometry(geometryArguments, withDevice: sceneView.device)
-        let node = createNode(geometry, fromDict: arguments, forDevice: sceneView.device)
+//        let geometry = createGeometry(geometryArguments, withDevice: sceneView.device)
+//        let node = createNode(geometry, fromDict: arguments, forDevice: sceneView.device)
         
-        let resArray = [serializeVector(node.boundingBox.min), serializeVector(node.boundingBox.max)]
-        result(resArray)
+//        let resArray = [serializeVector(node.boundingBox.min), serializeVector(node.boundingBox.max)]
+//        result(resArray)
     }
     
     func onTransformChanged(_ arguments: Dictionary<String, Any>) {
@@ -122,11 +129,11 @@ extension FlutterArkitView {
                 logPluginError("deserialization failed", toChannel: channel)
                 return
         }
-        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
-            node.transform = deserializeMatrix4(params)
-        } else {
-            logPluginError("node not found", toChannel: channel)
-        }
+//        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
+//            node.transform = deserializeMatrix4(params)
+//        } else {
+//            logPluginError("node not found", toChannel: channel)
+//        }
     }
     
     func onIsHiddenChanged(_ arguments: Dictionary<String, Any>) {
@@ -136,11 +143,11 @@ extension FlutterArkitView {
                 logPluginError("deserialization failed", toChannel: channel)
                 return
         }
-        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
-            node.isHidden = params
-        } else {
-            logPluginError("node not found", toChannel: channel)
-        }
+//        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
+//            node.isHidden = params
+//        } else {
+//            logPluginError("node not found", toChannel: channel)
+//        }
     }
     
     func onUpdateSingleProperty(_ arguments: Dictionary<String, Any>) {
@@ -154,15 +161,15 @@ extension FlutterArkitView {
                 return
         }
         
-        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
-            if let obj = node.value(forKey: keyProperty) as? NSObject {
-                obj.setValue(propertyValue, forKey: propertyName)
-            } else {
-                logPluginError("value is not a NSObject", toChannel: channel)
-            }
-        } else {
-            logPluginError("node not found", toChannel: channel)
-        }
+//        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
+//            if let obj = node.value(forKey: keyProperty) as? NSObject {
+//                obj.setValue(propertyValue, forKey: propertyName)
+//            } else {
+//                logPluginError("value is not a NSObject", toChannel: channel)
+//            }
+//        } else {
+//            logPluginError("node not found", toChannel: channel)
+//        }
     }
     
     func onUpdateMaterials(_ arguments: Dictionary<String, Any>) {
@@ -172,13 +179,13 @@ extension FlutterArkitView {
                 logPluginError("deserialization failed", toChannel: channel)
                 return
         }
-        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
+//        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true) {
             
-            let materials = parseMaterials(rawMaterials)
-            node.geometry?.materials = materials
-        } else {
-            logPluginError("node not found", toChannel: channel)
-        }
+//            let materials = parseMaterials(rawMaterials)
+//            node.geometry?.materials = materials
+//        } else {
+//            logPluginError("node not found", toChannel: channel)
+//        }
     }
     
     func onUpdateFaceGeometry(_ arguments: Dictionary<String, Any>) {
@@ -190,35 +197,46 @@ extension FlutterArkitView {
                 logPluginError("deserialization failed", toChannel: channel)
                 return
         }
-        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true),
-            let geometry = node.geometry as? ARSCNFaceGeometry,
-            let anchor = sceneView.session.currentFrame?.anchors.first(where: {$0.identifier.uuidString == fromAnchorId}) as? ARFaceAnchor
-        {
-            geometry.update(from: anchor.geometry)
-        } else {
-            logPluginError("node not found, geometry was empty, or anchor not found", toChannel: channel)
-        }
+//        if let node = sceneView.scene.rootNode.childNode(withName: name, recursively: true),
+//            let geometry = node.geometry as? ARSCNFaceGeometry,
+//            let anchor = sceneView.session.currentFrame?.anchors.first(where: {$0.identifier.uuidString == fromAnchorId}) as? ARFaceAnchor
+//        {
+//            geometry.update(from: anchor.geometry)
+//        } else {
+//            logPluginError("node not found, geometry was empty, or anchor not found", toChannel: channel)
+//        }
         #else
         logPluginError("TRUEDEPTH_API disabled", toChannel: channel)
         #endif
     }
     
     func onPerformHitTest(_ arguments: Dictionary<String, Any>, _ result: FlutterResult) {
+        
+        if self.arView == nil {
+            result(nil)
+            return
+        }
         guard let x = arguments["x"] as? Double,
             let y = arguments["y"] as? Double else {
                 logPluginError("deserialization failed", toChannel: channel)
                 result(nil)
                 return
         }
-        let viewWidth = sceneView.bounds.size.width
-        let viewHeight = sceneView.bounds.size.height
+        let viewWidth = self.arView!.bounds.size.width
+        let viewHeight = self.arView!.bounds.size.height
         let location = CGPoint(x: viewWidth * CGFloat(x), y: viewHeight * CGFloat(y));
-        let arHitResults = getARHitResultsArray(sceneView, atLocation: location)
+//        let arHitResults = getARHitResultsArray(sceneView, atLocation: location)
+        let arHitResults = getARHitResultsArrayRealityKit(self.arView!, atLocation: location)
         result(arHitResults)
     }
     
     func onGetLightEstimate(_ result: FlutterResult) {
-        let frame = sceneView.session.currentFrame
+        if self.arView == nil {
+            result(nil)
+            return
+        }
+        
+        let frame = self.arView!.session.currentFrame
         if let lightEstimate = frame?.lightEstimate {
             let res = ["ambientIntensity": lightEstimate.ambientIntensity, "ambientColorTemperature": lightEstimate.ambientColorTemperature]
             result(res)
@@ -233,14 +251,19 @@ extension FlutterArkitView {
             result(nil)
             return
         }
-        let point = deserizlieVector3(rawPoint)
-        let projectedPoint = sceneView.projectPoint(point)
-        let res = serializeVector(projectedPoint)
-        result(res)
+//        let point = deserizlieVector3(rawPoint)
+//        let projectedPoint = sceneView.projectPoint(point)
+//        let res = serializeVector(projectedPoint)
+//        result(res)
+        result(nil)
     }
     
     func onCameraProjectionMatrix(_ result: FlutterResult) {
-        if let frame = sceneView.session.currentFrame {
+        if self.arView == nil {
+            result(nil)
+            return
+        }
+        if let frame = self.arView!.session.currentFrame {
             let matrix = serializeMatrix(frame.camera.projectionMatrix)
             result(matrix)
         } else {
@@ -249,12 +272,13 @@ extension FlutterArkitView {
     }
   
     func onPointOfViewTransform(_ result: FlutterResult) {
-        if let pointOfView = sceneView.pointOfView {
-          let matrix = serializeMatrix(pointOfView.simdWorldTransform)
-            result(matrix)
-        } else {
-            result(nil)
-        }
+//        if let pointOfView = sceneView.pointOfView {
+//          let matrix = serializeMatrix(pointOfView.simdWorldTransform)
+//            result(matrix)
+//        } else {
+//            result(nil)
+//        }
+        result(nil)
     }
     
     func onPlayAnimation(_ arguments: Dictionary<String, Any>) {
@@ -265,16 +289,16 @@ extension FlutterArkitView {
                 return
         }
         
-        if let sceneUrl = Bundle.main.url(forResource: sceneName, withExtension: "dae"),
-            let sceneSource = SCNSceneSource(url: sceneUrl, options: nil),
-            let animation = sceneSource.entryWithIdentifier(animationIdentifier, withClass: CAAnimation.self) {
-            animation.repeatCount = 1
-            animation.fadeInDuration = 1
-            animation.fadeOutDuration = 0.5
-            sceneView.scene.rootNode.addAnimation(animation, forKey: key)
-        } else {
-            logPluginError("animation failed", toChannel: channel)
-        }
+//        if let sceneUrl = Bundle.main.url(forResource: sceneName, withExtension: "dae"),
+//            let sceneSource = SCNSceneSource(url: sceneUrl, options: nil),
+//            let animation = sceneSource.entryWithIdentifier(animationIdentifier, withClass: CAAnimation.self) {
+//            animation.repeatCount = 1
+//            animation.fadeInDuration = 1
+//            animation.fadeOutDuration = 0.5
+//            sceneView.scene.rootNode.addAnimation(animation, forKey: key)
+//        } else {
+//            logPluginError("animation failed", toChannel: channel)
+//        }
     }
     
     func onStopAnimation(_ arguments: Dictionary<String, Any>) {
@@ -282,11 +306,15 @@ extension FlutterArkitView {
             logPluginError("deserialization failed", toChannel: channel)
             return
         }
-        sceneView.scene.rootNode.removeAnimation(forKey: key)
+//        sceneView.scene.rootNode.removeAnimation(forKey: key)
     }
 
     func onCameraEulerAngles(_ result: FlutterResult){
-        if let frame = sceneView.session.currentFrame {
+        if self.arView == nil {
+            result(nil)
+            return
+        }
+        if let frame = self.arView!.session.currentFrame {
             let res = serializeArray(frame.camera.eulerAngles)
             result(res)
         } else {

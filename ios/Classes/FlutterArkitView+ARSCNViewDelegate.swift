@@ -1,7 +1,7 @@
 import Foundation
 import ARKit
 
-extension FlutterArkitView: ARSCNViewDelegate {
+extension FlutterArkitView: ARSessionDelegate {
     func session(_ session: ARSession, didFailWithError error: Error) {
         logPluginError("sessionDidFailWithError: \(error.localizedDescription)", toChannel: channel)
     }

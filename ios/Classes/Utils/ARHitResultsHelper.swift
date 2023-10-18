@@ -1,4 +1,5 @@
 import ARKit
+import RealityKit
 
 func getARHitResultsArray(_ sceneView: ARSCNView, atLocation location: CGPoint) -> Array<Dictionary<String, Any>>{
     let arHitResults = getARHitResults(sceneView, atLocation: location)
@@ -15,6 +16,24 @@ fileprivate func getARHitResults(_ sceneView: ARSCNView, atLocation location: CG
         types.insert(.existingPlaneUsingGeometry)
     }
     let results = sceneView.hitTest(location, types: types)
+    return results
+}
+
+func getARHitResultsArrayRealityKit(_ arView: ARView, atLocation location: CGPoint) -> Array<Dictionary<String, Any>>{
+    let arHitResults = getARHitResultsRealityKit(arView, atLocation: location)
+    let results = convertHitResultsToArray(arHitResults)
+    return results
+}
+
+fileprivate func getARHitResultsRealityKit(_ arView: ARView, atLocation location: CGPoint) -> Array<ARHitTestResult> {
+    var types = ARHitTestResult.ResultType(
+        [.featurePoint, .estimatedHorizontalPlane, .existingPlane, .existingPlaneUsingExtent])
+    
+    if #available(iOS 11.3, *) {
+        types.insert(.estimatedVerticalPlane)
+        types.insert(.existingPlaneUsingGeometry)
+    }
+    let results = arView.hitTest(location, types: types)
     return results
 }
 
