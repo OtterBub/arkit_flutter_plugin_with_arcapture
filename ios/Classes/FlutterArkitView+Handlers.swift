@@ -29,6 +29,7 @@ extension FlutterArkitView {
         let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ".usdc")
         do {
             let _:() = try asset.export(to: exportUrl)
+            NSLog("onAddNode export is success \(name)")
         } catch {
             NSLog("onAddNode export is error \(error)")
         }
@@ -38,10 +39,25 @@ extension FlutterArkitView {
             NSLog("onAddNode objEntity is nil \(String(describing: objEntity))")
         }
         
-        entityLoop(entity: objEntity!, material: SimpleMaterial())
+        let newEntity = entityEditMaterialLoop(entity: objEntity!, material: SimpleMaterial(
+            color: UIColor(
+                red: CGFloat.random(in: 0...1),
+                green: CGFloat.random(in: 0...1),
+                blue: CGFloat.random(in: 0...1),
+                alpha: 1.0
+            ),
+            roughness: 0.5,
+            isMetallic: Bool.random()
+        ))
         
-        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.2, 0.2)))
-        anchor.addChild(objEntity!)
+        newEntity.transform.matrix = simd_float4x4(node.transform)
+        
+//        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.2, 0.2)))
+
+        let anchor = AnchorEntity()
+        anchor.addChild(newEntity)
+//        anchor.transform.matrix = simd_float4x4(node.transform)
+        
         
         self.arView!.scene.anchors.append(anchor)
 
