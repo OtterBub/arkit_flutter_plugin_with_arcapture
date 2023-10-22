@@ -10,6 +10,7 @@ import 'package:arkit_plugin_example/earth_page.dart';
 import 'package:arkit_plugin_example/hello_world.dart';
 import 'package:arkit_plugin_example/image_detection_page.dart';
 import 'package:arkit_plugin_example/light_estimate_page.dart';
+import 'package:arkit_plugin_example/load_external_model.dart';
 import 'package:arkit_plugin_example/manipulation_page.dart';
 import 'package:arkit_plugin_example/measure_page.dart';
 import 'package:arkit_plugin_example/midas_page.dart';
@@ -38,6 +39,13 @@ class MyApp extends StatelessWidget {
         Icons.home,
         () => Navigator.of(context)
             .push<void>(MaterialPageRoute(builder: (c) => HelloWorldPage())),
+      ),
+      Sample(
+        'Load External Model',
+        'Load External Model .obj etx...',
+        Icons.home,
+        () => Navigator.of(context)
+            .push<void>(MaterialPageRoute(builder: (c) => LoadExternal3DModel())),
       ),
       Sample(
         'Check configuration',

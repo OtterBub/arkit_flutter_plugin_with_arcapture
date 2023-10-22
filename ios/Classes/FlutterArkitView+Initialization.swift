@@ -9,22 +9,38 @@ extension FlutterArkitView {
             self.arView?.session.delegate = self
         }
         
+        if #available(iOS 15.0, *) {
+            self.setupPostProcessing()
+        } else {
+            // Fallback on earlier versions
+        }
+        
         initalizeGesutreRecognizers(arguments)
         
         self.configurationRealityKit = ARWorldTrackingConfiguration()
         
         if #available(iOS 13.4, *) {
             self.configurationRealityKit?.sceneReconstruction = .meshWithClassification
+            
             self.configurationRealityKit?.planeDetection = [.horizontal, .vertical]
-            self.arView?.environment.sceneUnderstanding.options.insert([.occlusion, .receivesLighting])
-            self.arView?.debugOptions.insert(.showSceneUnderstanding)
             self.configurationRealityKit?.frameSemantics.insert(.personSegmentationWithDepth)
+
+            // self.arView?.debugOptions.insert(.showSceneUnderstanding)
+            self.arView?.environment.sceneUnderstanding.options.insert([
+                .occlusion,
+            ])
+            
         } else {
             // Fallback on earlier versions
         }
         
         
         if(self.configurationRealityKit != nil) {
+            self.arView?.renderOptions.insert([
+                .disableMotionBlur,
+                .disableHDR,
+                .disableCameraGrain,
+            ])
             self.arView?.session.run(configurationRealityKit!)
         }
     }

@@ -8,65 +8,17 @@ extension FlutterArkitView {
         let geometryArguments = arguments["geometry"] as? Dictionary<String, Any>
         let geometry = createGeometry(geometryArguments)
         let node = createNode(geometry, fromDict: arguments)
-//        if let parentNodeName = arguments["parentNodeName"] as? String {
-//            let parentNode = sceneView.scene.rootNode.childNode(withName: parentNodeName, recursively: true)
-//            parentNode?.addChildNode(node)
-//            
-//        } else {
-//            sceneView.scene.rootNode.addChildNode(node)
-//        }
         
-        if geometry == nil {
+        let newAnchorEntity = RealityKitUtil.convertNodeToAnchorEntity(node: node)
+//        newAnchorEntity?.transform.matrix = simd_float4x4(node.transform)
+        
+        if newAnchorEntity == nil {
+            NSLog("[FlutterARkitView Handlers] onAddNote newAnchorEntity is nil")
+            logPluginError("[FlutterARkitView Handlers] onAddNote SceneNode convert to AnchorEntity error", toChannel: channel)
             return
         }
         
-        let mesh = MDLMesh(scnGeometry: geometry!)
-        let asset = MDLAsset()
-        asset.add(mesh)
-        
-        let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-        let name = "obj_" + (node.name ?? "node")
-        let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ".usdc")
-        do {
-            let _:() = try asset.export(to: exportUrl)
-            NSLog("onAddNode export is success \(name)")
-        } catch {
-            NSLog("onAddNode export is error \(error)")
-        }
-        
-        let objEntity = try? Entity.load(contentsOf: exportUrl)
-        if objEntity == nil {
-            NSLog("onAddNode objEntity is nil \(String(describing: objEntity))")
-        }
-        
-        let anchor = AnchorEntity()
-        
-        if #available(iOS 15.0, *) {
-            let newEntity = RealityKitUtil.entityEditMaterialLoop(entity: objEntity!, material: SimpleMaterial(
-                color: UIColor(
-                    red: CGFloat.random(in: 0...1),
-                    green: CGFloat.random(in: 0...1),
-                    blue: CGFloat.random(in: 0...1),
-                    alpha: 1.0
-                ),
-                roughness: 0.5,
-                isMetallic: Bool.random()
-            ))
-        newEntity.transform.matrix = simd_float4x4(node.transform)
-        anchor.addChild(newEntity)
-        } else {
-            // Fallback on earlier versions
-            objEntity?.transform.matrix = simd_float4x4(node.transform)
-            anchor.addChild(objEntity!)
-        }
-        
-        
-//        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.2, 0.2)))
-
-//        anchor.transform.matrix = simd_float4x4(node.transform)
-        
-        
-        self.arView!.scene.anchors.append(anchor)
+        self.arView!.scene.anchors.append(newAnchorEntity!)
 
         NSLog("onAddNode -- END")
     }
@@ -97,6 +49,13 @@ extension FlutterArkitView {
         }
 //        let node = sceneView.scene.rootNode.childNode(withName: nodeName, recursively: true)
 //        node?.removeFromParentNode()
+
+        let entity = self.arView?.scene.findEntity(named: nodeName)
+        let anchor = entity?.anchor
+       
+        if anchor == nil { return }
+        
+        self.arView?.scene.removeAnchor(entity!.anchor!)
     }
   
     func onRemoveAnchor(_ arguments: Dictionary<String, Any>) {
@@ -337,8 +296,27 @@ extension FlutterArkitView {
         NSLog("snapshotRun function -- END")
         return result
     }
+    
+    func onGetStreamSnapshot(_ arguments: Dictionary<String, Any>?, _ result: FlutterResult) {
+        if self.bytes != nil {
+            gettingBytes = true
+            let data = FlutterStandardTypedData(bytes:bytes!)
+            result(data)
+        } else {
+             result(nil)
+        }
+        gettingBytes = false
+        return
+    }
 
     func onGetSnapshot(_ arguments: Dictionary<String, Any>?, _ result: FlutterResult) {
+        if self.bytes != nil {
+            let data = FlutterStandardTypedData(bytes:bytes!)
+            result(data)
+        } else {
+            result(nil)
+        }
+        
         if self.capturing {
             if self.bytes != nil {
                 let data = FlutterStandardTypedData(bytes:bytes!)

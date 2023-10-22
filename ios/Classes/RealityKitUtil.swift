@@ -11,9 +11,12 @@ import RealityKit
 class RealityKitUtil {
     
     @available(iOS 15.0, *)
-    static func entityEditMaterialLoop(entity: Entity, depth: Int = 0,
-                                material: SimpleMaterial,
-                                physicMaterial: PhysicallyBasedMaterial? = nil) -> Entity
+    static func entityEditMaterialLoop(
+        entity: Entity,
+        material: SimpleMaterial,
+        physicMaterial: PhysicallyBasedMaterial? = nil,
+        depth: Int = 0
+    ) -> Entity
     {
         for (index, comp) in entity.children.enumerated() {
             NSLog("Loop [\(index)] is \(comp)")
@@ -36,5 +39,65 @@ class RealityKitUtil {
             
         }
         return entity
+    }
+    
+    static func convertNodeToAnchorEntity(node: SCNNode) -> AnchorEntity? {
+        let resultAnchorEntity = AnchorEntity()
+        
+        let newEntity = convertNodeToEntity(node: node)
+        resultAnchorEntity.addChild(newEntity)
+        
+        return resultAnchorEntity
+    }
+    
+    static func convertNodeToEntity(node: SCNNode) -> Entity {
+        var resultEntity = Entity()
+        
+        let nodeGeo = node.geometry
+        
+        if nodeGeo != nil {
+            
+            let mesh = MDLMesh(scnGeometry: nodeGeo!)
+            let asset = MDLAsset()
+            asset.add(mesh)
+            
+            let documentsPath = NSSearchPathForDirectoriesInDomains( .documentDirectory, .userDomainMask, true)[0]
+            let name = node.name ?? "SCNNode"
+            let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ".usdc")
+            do {
+                try asset.export(to: exportUrl)
+            } catch {
+                NSLog("[RealityKitUtil] convertNodeToEntity export is error \(error)")
+            }
+            
+            let loadEntity = try? Entity.load(contentsOf: exportUrl)
+            if loadEntity == nil {
+                NSLog("[RealityKitUtil] convertNodeToEntity load failed, objEntity is nil \(String(describing: resultEntity))")
+            } else {
+                resultEntity = loadEntity!
+            }
+            
+            if #available(iOS 15.0, *) {
+                resultEntity = RealityKitUtil.entityEditMaterialLoop(entity: resultEntity, material: SimpleMaterial(
+                    color: UIColor(
+                        red: CGFloat.random(in: 0...1),
+                        green: CGFloat.random(in: 0...1),
+                        blue: CGFloat.random(in: 0...1),
+                        alpha: 1.0
+                    ),
+                    roughness: 0.5,
+                    isMetallic: Bool.random()
+                ))
+            }
+        }
+        
+        resultEntity.transform.matrix = simd_float4x4(node.transform)
+        
+        for childNode in node.childNodes {
+            let childEntity = convertNodeToEntity(node: childNode)
+            resultEntity.addChild(childEntity)
+        }
+        
+        return resultEntity
     }
 }

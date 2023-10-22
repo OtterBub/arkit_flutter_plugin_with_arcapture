@@ -52,8 +52,8 @@ class _testViewerState extends State<testViewer> {
         if (imageList.length < 3) {
           imageList.add(image);
         } else {
-          imageList[indexCount] = image;
           indexCount = (indexCount + 1) % 3;
+          imageList[indexCount] = image;
         }
       } catch (e) {
         log("snapshot error: $e");

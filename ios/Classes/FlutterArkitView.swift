@@ -2,6 +2,9 @@ import Foundation
 import RealityKit
 import ARKit
 
+import ReplayKit
+import AVFoundation
+
 class FlutterArkitView: NSObject, FlutterPlatformView {
     
 //    let sceneView: ARSCNView
@@ -15,8 +18,11 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     var bytes: Data? = nil
     
     var capturing: Bool = false
+    var gettingBytes = false
     
     var frame: CGRect = CGRect()
+    
+    var snapshotWhile: Bool = false
     
     
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger) {
@@ -132,12 +138,20 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
             onCameraEulerAngles(result)
             break
         case "snapshot":
-            onGetSnapshot(arguments, result)
+//            if snapshotWhile == false {
+//                snapshotWhile = true
+//                snapshotCaptureRun()
+//            }
+            onGetStreamSnapshot(arguments, result)
+//             onGetSnapshot(arguments, result)
             break
         case "captureStart":
+//            snapshotWhile = true
+//            snapshotCaptureRun()
             result(false)
             break
         case "captureStop":
+//            snapshotWhile = false
             result(false)
             break
         case "cameraPosition":
@@ -149,14 +163,72 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
         }
     }
     
+    var count = 0
+    
+    func snapshotCaptureRunRPVer() {
+        let recorder = RPScreenRecorder.shared()
+        recorder.isMicrophoneEnabled = false
+        let cameraPreviewView = UIView(frame: self.arView?.frame ?? CGRect(x: 0, y: 0, width: 200, height: 200))
+//        recorder.cameraPreviewView = cameraPreviewView
+        recorder.startCapture(
+            handler: {
+                buffer, type, error in
+                // do handling buffer
+//                self.bytes = buffer.
+            },
+       
+            completionHandler: {
+                error in
+                // error handling
+            }
+        )
+    }
+    
+    func snapshotCaptureRun() {
+        
+        let arFrame = self.arView?.frame
+        
+        if arFrame == nil {
+            snapshotWhile = false
+            return
+        }
+        
+        if arFrame!.height <= 0 && arFrame!.width <= 0 {
+            Task {
+                if snapshotWhile {
+                    snapshotCaptureRun()
+                }
+            }
+            return
+        }
+        
+        self.arView?.snapshot(saveToHDR: false) {
+            [self] image in
+            NSLog("snapshotCaptureRun() \(count)")
+            count = count + 1
+            self.bytes = image?.jpegData(compressionQuality: 0.5)
+            if self.snapshotWhile && self.arView != nil {
+                self.snapshotCaptureRun();
+            }
+        }
+        
+    }
+    
+    func recordTest() {
+        
+        
+    
+    }
+    
     func onDispose(_ result: FlutterResult) {
-//        sceneView.session.pause()
         arView?.session.pause()
-//        arView?.session.delegate = nil
-//        arView?.scene.anchors.removeAll()
+        arView?.session.delegate = nil
+        arView?.scene.anchors.removeAll()
 //        arView?.removeFromSuperview()
-//        arView?.window?.resignKey()
-//        arView = nil
+        arView?.window?.resignKey()
+        arView = nil
+        
+        snapshotWhile = false
         
         self.configurationRealityKit = nil
         self.channel.setMethodCallHandler(nil)

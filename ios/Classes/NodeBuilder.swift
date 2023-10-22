@@ -1,4 +1,5 @@
 import ARKit
+import RealityKit
 
 func createNode(_ geometry: SCNGeometry?, fromDict dict: Dictionary<String, Any>, forDevice device: MTLDevice? = nil) -> SCNNode {
     let dartType = dict["dartType"] as! String
@@ -49,6 +50,22 @@ fileprivate func createReferenceNode(_ dict: Dictionary<String, Any>) -> SCNRefe
     let node = SCNReferenceNode(url: referenceUrl)
     node?.load()
     return node!
+}
+
+fileprivate func createReferenceAnchor(_ dict: Dictionary<String, Any>) -> Entity? {
+    let url = dict["url"] as! String
+    var referenceUrl: URL
+    if let bundleURL = Bundle.main.url(forResource: url, withExtension: nil){
+        referenceUrl = bundleURL
+    } else {
+        referenceUrl = URL(fileURLWithPath: url)
+    }
+    
+    
+    
+        
+    
+    return nil
 }
 
 fileprivate func createPhysicsBody(_ dict: Dictionary<String, Any>, forDevice device: MTLDevice?) -> SCNPhysicsBody {
