@@ -13,7 +13,7 @@ class RealityKitUtil {
     @available(iOS 15.0, *)
     static func entityEditMaterialLoop(
         entity: Entity,
-        material: SimpleMaterial,
+        material: Material,
         physicMaterial: PhysicallyBasedMaterial? = nil,
         depth: Int = 0
     ) -> Entity
@@ -63,9 +63,11 @@ class RealityKitUtil {
             
             let documentsPath = NSSearchPathForDirectoriesInDomains( .documentDirectory, .userDomainMask, true)[0]
             let name = node.name ?? "SCNNode"
-            let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ".usdc")
+            
+            let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ( nodeGeo!.materials.isEmpty ? ".usdc" : ".obj"))
             do {
                 try asset.export(to: exportUrl)
+                NSLog("[RealityKitUtil] convertNodeToEntity export is success \n \(exportUrl)")
             } catch {
                 NSLog("[RealityKitUtil] convertNodeToEntity export is error \(error)")
             }
@@ -96,6 +98,10 @@ class RealityKitUtil {
         for childNode in node.childNodes {
             let childEntity = convertNodeToEntity(node: childNode)
             resultEntity.addChild(childEntity)
+        }
+        
+        if node.name != nil {
+            resultEntity.name = node.name!;
         }
         
         return resultEntity
