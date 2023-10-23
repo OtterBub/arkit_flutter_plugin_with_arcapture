@@ -8,7 +8,8 @@ import AVFoundation
 class FlutterArkitView: NSObject, FlutterPlatformView {
     
 //    let sceneView: ARSCNView
-    var arView: ARView?
+    static var arView: ARView?
+    static var refCount = 0
     let channel: FlutterMethodChannel
     
     var forceTapOnCenter: Bool = false
@@ -25,20 +26,24 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     var snapshotWhile: Bool = false
     
     
+    
     init(withFrame frame: CGRect, viewIdentifier viewId: Int64, messenger msg: FlutterBinaryMessenger) {
 //        self.sceneView = ARSCNView(frame: frame)
         self.frame = frame
-        self.arView = ARView(frame: frame)
+        if FlutterArkitView.arView == nil {
+            FlutterArkitView.arView = ARView(frame: frame)
+        }
         self.channel = FlutterMethodChannel(name: "arkit_\(viewId)", binaryMessenger: msg)
         
         super.init()
         
 //        self.sceneView.delegate = self
-        self.arView?.session.delegate = self
+        FlutterArkitView.arView?.session.delegate = self
         self.channel.setMethodCallHandler(self.onMethodCalled)
+        FlutterArkitView.refCount += 1
     }
     
-    func view() -> UIView { return self.arView ?? UIView() }
+    func view() -> UIView { return FlutterArkitView.arView ?? UIView() }
     
     func onMethodCalled(_ call: FlutterMethodCall, _ result: FlutterResult) {
         let arguments = call.arguments as? Dictionary<String, Any>
@@ -168,7 +173,7 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     func snapshotCaptureRunRPVer() {
         let recorder = RPScreenRecorder.shared()
         recorder.isMicrophoneEnabled = false
-        let cameraPreviewView = UIView(frame: self.arView?.frame ?? CGRect(x: 0, y: 0, width: 200, height: 200))
+        let cameraPreviewView = UIView(frame: FlutterArkitView.arView?.frame ?? CGRect(x: 0, y: 0, width: 200, height: 200))
 //        recorder.cameraPreviewView = cameraPreviewView
         recorder.startCapture(
             handler: {
@@ -186,7 +191,7 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     
     func snapshotCaptureRun() {
         
-        let arFrame = self.arView?.frame
+        let arFrame = FlutterArkitView.arView?.frame
         
         if arFrame == nil {
             snapshotWhile = false
@@ -202,12 +207,12 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
             return
         }
         
-        self.arView?.snapshot(saveToHDR: false) {
+        FlutterArkitView.arView?.snapshot(saveToHDR: false) {
             [self] image in
             NSLog("snapshotCaptureRun() \(count)")
             count = count + 1
             self.bytes = image?.jpegData(compressionQuality: 0.5)
-            if self.snapshotWhile && self.arView != nil {
+            if self.snapshotWhile && FlutterArkitView.arView != nil {
                 self.snapshotCaptureRun();
             }
         }
@@ -221,14 +226,18 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     }
     
     func onDispose(_ result: FlutterResult) {
-        arView?.session.pause()
-        arView?.session.delegate = nil
-        arView?.scene.anchors.removeAll()
-//        arView?.removeFromSuperview()
-        arView?.window?.resignKey()
-        arView = nil
+        FlutterArkitView.refCount -= 1
+        if FlutterArkitView.refCount == 0 {
+            FlutterArkitView.arView?.session.pause()
+            FlutterArkitView.arView?.session.delegate = nil
+            FlutterArkitView.arView?.scene.anchors.removeAll()
+            // arView?.removeFromSuperview() // this code is occur crash
+            FlutterArkitView.arView?.window?.resignKey()
+            FlutterArkitView.arView = nil
+            snapshotWhile = false
+        }
         
-        snapshotWhile = false
+        
         
         self.configurationRealityKit = nil
         self.channel.setMethodCallHandler(nil)

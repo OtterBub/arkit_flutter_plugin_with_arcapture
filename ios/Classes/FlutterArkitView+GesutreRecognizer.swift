@@ -12,7 +12,7 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
                 let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
                 tapGestureRecognizer.delegate = self
 //                self.sceneView.gestureRecognizers?.append(tapGestureRecognizer)
-                self.arView?.gestureRecognizers?.append(tapGestureRecognizer)
+                FlutterArkitView.arView?.gestureRecognizers?.append(tapGestureRecognizer)
             }
         }
         
@@ -20,7 +20,7 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
             if (enablePinch) {
                 let pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
                 pinchGestureRecognizer.delegate = self
-                self.arView?.gestureRecognizers?.append(pinchGestureRecognizer)
+                FlutterArkitView.arView?.gestureRecognizers?.append(pinchGestureRecognizer)
             }
         }
 
@@ -28,7 +28,7 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
             if (enablePan) {
                 let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
                 panGestureRecognizer.delegate = self
-                self.arView?.gestureRecognizers?.append(panGestureRecognizer)
+                FlutterArkitView.arView?.gestureRecognizers?.append(panGestureRecognizer)
             }
         }
         
@@ -36,7 +36,7 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
             if (enableRotation) {
                 let rotationGestureRecognizer = UIRotationGestureRecognizer(target: self, action: #selector(handleRotation(_:)))
                 rotationGestureRecognizer.delegate = self
-                self.arView?.gestureRecognizers?.append(rotationGestureRecognizer)
+                FlutterArkitView.arView?.gestureRecognizers?.append(rotationGestureRecognizer)
             }
         }
     }
@@ -48,11 +48,11 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
 //        }
         
 //        let touchLocation = self.forceTapOnCenter ? self.sceneView.center : recognizer.location(in: sceneView)
-        if self.arView == nil { return }
+        if FlutterArkitView.arView == nil { return }
         
-        let touchLocation = self.forceTapOnCenter ? self.arView!.center : recognizer.location(in: self.arView!)
+        let touchLocation = self.forceTapOnCenter ? FlutterArkitView.arView!.center : recognizer.location(in: FlutterArkitView.arView!)
 //        let hitResults = sceneView.hitTest(touchLocation, options: nil)
-        let hitResults = self.arView!.hitTest(touchLocation, types:.existingPlaneUsingGeometry )
+        let hitResults = FlutterArkitView.arView!.hitTest(touchLocation, types:.existingPlaneUsingGeometry )
         let results: Array<String> = hitResults.compactMap { $0.anchor?.name }
         if (results.count != 0) {
             self.channel.invokeMethod("onNodeTap", arguments: results)
@@ -61,8 +61,8 @@ extension FlutterArkitView: UIGestureRecognizerDelegate {
 //        let arHitResults = getARHitResultsArray(sceneView, atLocation: touchLocation)
 
         // change realitykit
-        if self.arView == nil { return }
-        let arHitResults = getARHitResultsArrayRealityKit(self.arView!, atLocation: touchLocation)
+        if FlutterArkitView.arView == nil { return }
+        let arHitResults = getARHitResultsArrayRealityKit(FlutterArkitView.arView!, atLocation: touchLocation)
         if (arHitResults.count != 0) {
             self.channel.invokeMethod("onARTap", arguments: arHitResults)
         }

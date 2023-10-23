@@ -4,9 +4,9 @@ import RealityKit
 extension FlutterArkitView {
     func initalize(_ arguments: Dictionary<String, Any>, _ result:FlutterResult) {
         
-        if self.arView == nil {
-            self.arView = ARView(frame: self.frame)
-            self.arView?.session.delegate = self
+        if FlutterArkitView.arView == nil {
+            FlutterArkitView.arView = ARView(frame: self.frame)
+            FlutterArkitView.arView?.session.delegate = self
         }
         
         if #available(iOS 15.0, *) {
@@ -25,8 +25,8 @@ extension FlutterArkitView {
             self.configurationRealityKit?.planeDetection = [.horizontal, .vertical]
             self.configurationRealityKit?.frameSemantics.insert(.personSegmentationWithDepth)
 
-            // self.arView?.debugOptions.insert(.showSceneUnderstanding)
-            self.arView?.environment.sceneUnderstanding.options.insert([
+            // FlutterArkitView.arView?.debugOptions.insert(.showSceneUnderstanding)
+            FlutterArkitView.arView?.environment.sceneUnderstanding.options.insert([
                 .occlusion,
             ])
             
@@ -36,12 +36,12 @@ extension FlutterArkitView {
         
         
         if(self.configurationRealityKit != nil) {
-            self.arView?.renderOptions.insert([
+            FlutterArkitView.arView?.renderOptions.insert([
                 .disableMotionBlur,
                 .disableHDR,
                 .disableCameraGrain,
             ])
-            self.arView?.session.run(configurationRealityKit!)
+            FlutterArkitView.arView?.session.run(configurationRealityKit!)
         }
     }
     

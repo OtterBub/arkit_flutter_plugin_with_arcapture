@@ -10,7 +10,7 @@ import RealityKit
 @available(iOS 15.0, *)
 extension FlutterArkitView {
     func setupPostProcessing() {
-        self.arView?.renderCallbacks.postProcess = self.postProcess
+        FlutterArkitView.arView?.renderCallbacks.postProcess = self.postProcess
     }
     
     func postProcess(context: ARView.PostProcessContext) {

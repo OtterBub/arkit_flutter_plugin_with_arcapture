@@ -18,7 +18,7 @@ extension FlutterArkitView {
             return
         }
         
-        self.arView!.scene.anchors.append(newAnchorEntity!)
+        FlutterArkitView.arView!.scene.anchors.append(newAnchorEntity!)
 
         NSLog("onAddNode -- END")
     }
@@ -50,12 +50,12 @@ extension FlutterArkitView {
 //        let node = sceneView.scene.rootNode.childNode(withName: nodeName, recursively: true)
 //        node?.removeFromParentNode()
 
-        let entity = self.arView?.scene.findEntity(named: nodeName)
+        let entity = FlutterArkitView.arView?.scene.findEntity(named: nodeName)
         let anchor = entity?.anchor
        
         if anchor == nil { return }
         
-        self.arView?.scene.removeAnchor(entity!.anchor!)
+        FlutterArkitView.arView?.scene.removeAnchor(entity!.anchor!)
     }
   
     func onRemoveAnchor(_ arguments: Dictionary<String, Any>) {
@@ -171,7 +171,7 @@ extension FlutterArkitView {
     
     func onPerformHitTest(_ arguments: Dictionary<String, Any>, _ result: FlutterResult) {
         
-        if self.arView == nil {
+        if FlutterArkitView.arView == nil {
             result(nil)
             return
         }
@@ -181,21 +181,21 @@ extension FlutterArkitView {
                 result(nil)
                 return
         }
-        let viewWidth = self.arView!.bounds.size.width
-        let viewHeight = self.arView!.bounds.size.height
+        let viewWidth = FlutterArkitView.arView!.bounds.size.width
+        let viewHeight = FlutterArkitView.arView!.bounds.size.height
         let location = CGPoint(x: viewWidth * CGFloat(x), y: viewHeight * CGFloat(y));
 //        let arHitResults = getARHitResultsArray(sceneView, atLocation: location)
-        let arHitResults = getARHitResultsArrayRealityKit(self.arView!, atLocation: location)
+        let arHitResults = getARHitResultsArrayRealityKit(FlutterArkitView.arView!, atLocation: location)
         result(arHitResults)
     }
     
     func onGetLightEstimate(_ result: FlutterResult) {
-        if self.arView == nil {
+        if FlutterArkitView.arView == nil {
             result(nil)
             return
         }
         
-        let frame = self.arView!.session.currentFrame
+        let frame = FlutterArkitView.arView!.session.currentFrame
         if let lightEstimate = frame?.lightEstimate {
             let res = ["ambientIntensity": lightEstimate.ambientIntensity, "ambientColorTemperature": lightEstimate.ambientColorTemperature]
             result(res)
@@ -218,11 +218,11 @@ extension FlutterArkitView {
     }
     
     func onCameraProjectionMatrix(_ result: FlutterResult) {
-        if self.arView == nil {
+        if FlutterArkitView.arView == nil {
             result(nil)
             return
         }
-        if let frame = self.arView!.session.currentFrame {
+        if let frame = FlutterArkitView.arView!.session.currentFrame {
             let matrix = serializeMatrix(frame.camera.projectionMatrix)
             result(matrix)
         } else {
@@ -269,11 +269,11 @@ extension FlutterArkitView {
     }
 
     func onCameraEulerAngles(_ result: FlutterResult){
-        if self.arView == nil {
+        if FlutterArkitView.arView == nil {
             result(nil)
             return
         }
-        if let frame = self.arView!.session.currentFrame {
+        if let frame = FlutterArkitView.arView!.session.currentFrame {
             let res = serializeArray(frame.camera.eulerAngles)
             result(res)
         } else {
@@ -288,7 +288,7 @@ extension FlutterArkitView {
     func snapshotRun(compressionQuality: CGFloat) async throws -> Data? {
         NSLog("snapshotRun function -- START")
         var result: Data?
-        await self.arView?.snapshot(saveToHDR: false) {
+        await FlutterArkitView.arView?.snapshot(saveToHDR: false) {
             (image) in
             result = image?.jpegData(compressionQuality: compressionQuality)
             NSLog("arView?.snapshot run \(String(describing: result))")
@@ -327,7 +327,7 @@ extension FlutterArkitView {
             return
         }
         
-        let arFrame = self.arView?.frame
+        let arFrame = FlutterArkitView.arView?.frame
         
         if arFrame == nil {
             result(nil)
@@ -345,14 +345,14 @@ extension FlutterArkitView {
         
         let compressionQuality: Double = arguments?["compressionQuality"] as? Double ?? 0.8
         
-        if self.arView == nil {
+        if FlutterArkitView.arView == nil {
             result(nil)
             return
         }
         
         
         
-        self.arView?.snapshot(saveToHDR: false) {
+        FlutterArkitView.arView?.snapshot(saveToHDR: false) {
             [self] (image) in
             self.bytes = image?.jpegData(compressionQuality: compressionQuality)
             self.capturing = false
@@ -369,7 +369,7 @@ extension FlutterArkitView {
     }
     
     func onGetCameraPosition(_ result: FlutterResult) {
-        if let frame: ARFrame = self.arView?.session.currentFrame {
+        if let frame: ARFrame = FlutterArkitView.arView?.session.currentFrame {
             let cameraPosition = frame.camera.transform.columns.3
             let res = serializeArray(cameraPosition)
             result(res)

@@ -49,6 +49,9 @@ fileprivate func getDictFromHitResult(_ result: ARHitTestResult) -> Dictionary<S
     dict["localTransform"] = serializeMatrix(result.localTransform)
     dict["worldTransform"] = serializeMatrix(result.worldTransform)
     
+    NSLog("[ARHitResultHelper] getDictFromHitResult result.orientation \(result.worldTransform.orientation)")
+    NSLog("[ARHitResultHelper] getDictFromHitResult result.orientation.normalize \(result.worldTransform.orientation.normalized)")
+    
     if let anchor = result.anchor {
         dict["anchor"] = serializeAnchor(anchor)
     }

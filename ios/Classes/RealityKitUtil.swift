@@ -107,3 +107,9 @@ class RealityKitUtil {
         return resultEntity
     }
 }
+
+internal extension float4x4 {
+    var orientation: simd_quatf {
+        return simd_quaternion(self)
+    }
+}

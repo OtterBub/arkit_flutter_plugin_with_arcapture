@@ -7,25 +7,25 @@ extension FlutterArkitView: ARCoachingOverlayViewDelegate {
     let goalType = arguments["goal"] as! Int
     let goal = ARCoachingOverlayView.Goal.init(rawValue: goalType)!
 
-    if self.arView == nil { return }
+      if FlutterArkitView.arView == nil { return }
 
-    let coachingView = ARCoachingOverlayView(frame: self.arView!.frame)
+      let coachingView = ARCoachingOverlayView(frame: FlutterArkitView.arView!.frame)
 
     coachingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
     removeCoachingOverlay()
 
-    self.arView!.addSubview(coachingView)
+    FlutterArkitView.arView!.addSubview(coachingView)
 
     coachingView.goal = goal
-    coachingView.session = self.arView!.session
+    coachingView.session = FlutterArkitView.arView!.session
     coachingView.delegate = self
     coachingView.setActive(true, animated: true)
   }
   
   func removeCoachingOverlay() {
-      if self.arView == nil { return }
-      if let view = self.arView?.subviews.first(where: {$0 is ARCoachingOverlayView}) {
+      if FlutterArkitView.arView == nil { return }
+      if let view = FlutterArkitView.arView?.subviews.first(where: {$0 is ARCoachingOverlayView}) {
       view.removeFromSuperview()
     }
   }
