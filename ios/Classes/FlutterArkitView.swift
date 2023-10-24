@@ -143,6 +143,9 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
             onDispose(result)
             result(nil)
             break
+        case "forcedDispose":
+            forcedDispose(result)
+            break
         case "cameraEulerAngles":
             onCameraEulerAngles(result)
             break
@@ -229,22 +232,40 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
     
     }
     
-    func onDispose(_ result: FlutterResult) {
-        FlutterArkitView.refCount -= 1
-        if FlutterArkitView.refCount == 0 {
-            FlutterArkitView.arView?.session.pause()
-            FlutterArkitView.arView?.session.delegate = nil
-            FlutterArkitView.arView?.scene.anchors.removeAll()
-            // arView?.removeFromSuperview() // this code is occur crash
-            FlutterArkitView.arView?.window?.resignKey()
-            FlutterArkitView.arView = nil
-            snapshotWhile = false
-        }
+    func forcedDispose(_ result: FlutterResult) {
+        NSLog("[FlutterArkitView] forcedDispose")
+        FlutterArkitView.refCount = 0
         
-        
-        
+        arDeinit()
         self.configurationRealityKit = nil
         self.channel.setMethodCallHandler(nil)
         result(nil)
+    }
+    
+    func onDispose(_ result: FlutterResult) {
+        var arDeinitRun = false
+
+        FlutterArkitView.refCount -= 1
+        NSLog("[FlutterArkitView] onDispose \(FlutterArkitView.refCount)")
+        
+        if FlutterArkitView.refCount == 0 {
+            arDeinit()
+            arDeinitRun = true
+        }
+        
+        self.configurationRealityKit = nil
+        self.channel.setMethodCallHandler(nil)
+        result(arDeinitRun)
+    }
+    
+    func arDeinit() {
+        FlutterArkitView.arView?.session.pause()
+        FlutterArkitView.arView?.session.delegate = nil
+        FlutterArkitView.arView?.scene.anchors.removeAll()
+        // arView?.removeFromSuperview() // this code is occur crash
+        FlutterArkitView.arView?.window?.resignKey()
+        FlutterArkitView.arView = nil
+        snapshotWhile = false
+        NSLog("[FlutterArkitView] ARSession arDeinit")
     }
 }

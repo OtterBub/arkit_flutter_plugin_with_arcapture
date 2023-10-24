@@ -310,8 +310,18 @@ class ARKitController {
   static const _stateConverter = ARTrackingStateConverter();
   static const _stateReasonConverter = ARTrackingStateReasonConverter();
 
-  void dispose() {
-    _channel.invokeMethod<void>('dispose');
+  Future<bool> dispose() async {
+    final result = await _channel.invokeMethod('dispose');
+
+    if (result is! bool) {
+      return false;
+    }
+    
+    return result;
+  }
+
+  void forcedDispose() {
+    _channel.invokeMethod<void>('forcedDispose');
   }
 
   Future<void> add(ARKitNode node, {String? parentNodeName}) {
