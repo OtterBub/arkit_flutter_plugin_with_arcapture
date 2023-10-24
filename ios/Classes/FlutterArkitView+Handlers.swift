@@ -68,6 +68,10 @@ extension FlutterArkitView {
 //        }
     }
     
+    func onAllClearObject() {
+        FlutterArkitView.arView?.scene.anchors.removeAll()
+    }
+    
     func onGetNodeBoundingBox(_ arguments: Dictionary<String, Any>, _ result:FlutterResult) {
         guard let geometryArguments = arguments["geometry"] as? Dictionary<String, Any> else {
             logPluginError("geometryArguments deserialization failed", toChannel: channel)
