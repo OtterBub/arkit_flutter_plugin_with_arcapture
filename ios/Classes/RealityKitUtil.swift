@@ -29,7 +29,12 @@ class RealityKitUtil {
                 
                 if physicMaterial != nil {
                     modelComp!.materials.append(physicMaterial!)
+                } else {
+                    var pmaterial = PhysicallyBasedMaterial()
+                    pmaterial.faceCulling = .none
+                    modelComp!.materials.append(pmaterial)
                 }
+
                 
                 entity.children[index].components.set(modelComp!)
             }
@@ -80,16 +85,19 @@ class RealityKitUtil {
             }
             
             if #available(iOS 15.0, *) {
-                resultEntity = RealityKitUtil.entityEditMaterialLoop(entity: resultEntity, material: SimpleMaterial(
-                    color: UIColor(
-                        red: CGFloat.random(in: 0...1),
-                        green: CGFloat.random(in: 0...1),
-                        blue: CGFloat.random(in: 0...1),
-                        alpha: 1.0
-                    ),
-                    roughness: 0.5,
-                    isMetallic: Bool.random()
-                ))
+                resultEntity = RealityKitUtil.entityEditMaterialLoop(
+                    entity: resultEntity,
+                    material: SimpleMaterial(
+                        color: UIColor(
+                            red: CGFloat.random(in: 0...1),
+                            green: CGFloat.random(in: 0...1),
+                            blue: CGFloat.random(in: 0...1),
+                            alpha: 1.0
+                        ),
+                        roughness: 0.5,
+                        isMetallic: Bool.random()
+                    )
+                )
             }
         }
         

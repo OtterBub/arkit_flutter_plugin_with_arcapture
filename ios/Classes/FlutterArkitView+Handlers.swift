@@ -6,17 +6,45 @@ extension FlutterArkitView {
     func onAddNode(_ arguments: Dictionary<String, Any>) {
         NSLog("onAddNode -- START")
         let geometryArguments = arguments["geometry"] as? Dictionary<String, Any>
+        
+        
         let geometry = createGeometry(geometryArguments)
         let node = createNode(geometry, fromDict: arguments)
         
+        if let geoarguments = geometryArguments {
+            let dartType = geoarguments["dartType"] as! String
+            NSLog("[onAddNode] dartType \(dartType)")
+            if dartType == "ARKitText" {
+                let text = geoarguments["text"] as! String
+                let extrusionDepth = geoarguments["extrusionDepth"] as! Float
+                let anchor = AnchorEntity()
+                let textEntity = ModelEntity(
+                    mesh: .generateText(
+                        text,
+                        extrusionDepth: extrusionDepth,
+                        font: .systemFont(ofSize: MeshResource.Font.systemFontSize, weight: .bold),
+                        containerFrame: CGRect.zero,
+                        alignment: .center,
+                        lineBreakMode: .byCharWrapping
+                    )
+                )
+                textEntity.model?.materials.append(SimpleMaterial(color: .yellow, roughness: 0.5, isMetallic: true))
+                anchor.addChild(textEntity)
+                anchor.transform.matrix = simd_float4x4(node.transform)
+                FlutterArkitView.arView!.scene.anchors.append(anchor)
+                return
+            }
+        }
+        
+        
         let newAnchorEntity = RealityKitUtil.convertNodeToAnchorEntity(node: node)
-//        newAnchorEntity?.transform.matrix = simd_float4x4(node.transform)
         
         if newAnchorEntity == nil {
             NSLog("[FlutterARkitView Handlers] onAddNote newAnchorEntity is nil")
             logPluginError("[FlutterARkitView Handlers] onAddNote SceneNode convert to AnchorEntity error", toChannel: channel)
             return
         }
+        
         
         FlutterArkitView.arView!.scene.anchors.append(newAnchorEntity!)
 

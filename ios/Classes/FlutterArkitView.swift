@@ -247,7 +247,7 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
 
         FlutterArkitView.refCount -= 1
         NSLog("[FlutterArkitView] onDispose \(FlutterArkitView.refCount)")
-        
+    
         if FlutterArkitView.refCount == 0 {
             arDeinit()
             arDeinitRun = true
