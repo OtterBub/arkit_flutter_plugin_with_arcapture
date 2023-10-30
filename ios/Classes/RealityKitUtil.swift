@@ -46,16 +46,16 @@ class RealityKitUtil {
         return entity
     }
     
-    static func convertNodeToAnchorEntity(node: SCNNode) -> AnchorEntity? {
+    static func convertNodeToAnchorEntity(node: SCNNode, fileName: String? = nil) -> AnchorEntity? {
         let resultAnchorEntity = AnchorEntity()
         
-        let newEntity = convertNodeToEntity(node: node)
+        let newEntity = convertNodeToEntity(node: node, fileName: fileName)
         resultAnchorEntity.addChild(newEntity)
         
         return resultAnchorEntity
     }
     
-    static func convertNodeToEntity(node: SCNNode) -> Entity {
+    static func convertNodeToEntity(node: SCNNode, fileName: String? = nil) -> Entity {
         var resultEntity = Entity()
         
         let nodeGeo = node.geometry
@@ -70,12 +70,19 @@ class RealityKitUtil {
             let name = node.name ?? "SCNNode"
             
             let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ( nodeGeo!.materials.isEmpty ? ".usdc" : ".obj"))
-            do {
-                try asset.export(to: exportUrl)
-                NSLog("[RealityKitUtil] convertNodeToEntity export is success \n \(exportUrl)")
-            } catch {
-                NSLog("[RealityKitUtil] convertNodeToEntity export is error \(error)")
+            
+            let fileManager = FileManager.default
+            if fileManager.fileExists(atPath: exportUrl.path) == false {
+                do {
+                    try asset.export(to: exportUrl)
+                    NSLog("[RealityKitUtil] convertNodeToEntity export is success \n \(exportUrl)")
+                } catch {
+                    NSLog("[RealityKitUtil] convertNodeToEntity export is error \(error)")
+                }
+            } else {
+                NSLog("[RealityKitUtil] convertNodeToEntity already export url : \(exportUrl)")
             }
+
             
             let loadEntity = try? Entity.load(contentsOf: exportUrl)
             if loadEntity == nil {

@@ -10,10 +10,14 @@ extension FlutterArkitView {
         
         let geometry = createGeometry(geometryArguments)
         let node = createNode(geometry, fromDict: arguments)
+            
+        var fileName: String?
         
         if let geoarguments = geometryArguments {
+            let fileName = geoarguments["url"]
             let dartType = geoarguments["dartType"] as! String
             NSLog("[onAddNode] dartType \(dartType)")
+           
             if dartType == "ARKitText" {
                 let text = geoarguments["text"] as! String
                 let extrusionDepth = geoarguments["extrusionDepth"] as! Float
@@ -33,11 +37,13 @@ extension FlutterArkitView {
                 anchor.transform.matrix = simd_float4x4(node.transform)
                 FlutterArkitView.arView!.scene.anchors.append(anchor)
                 return
+            } else if dartType == "ARKitReferenceNode" {
+                
             }
         }
         
         
-        let newAnchorEntity = RealityKitUtil.convertNodeToAnchorEntity(node: node)
+        let newAnchorEntity = RealityKitUtil.convertNodeToAnchorEntity(node: node, fileName: fileName)
         
         if newAnchorEntity == nil {
             NSLog("[FlutterARkitView Handlers] onAddNote newAnchorEntity is nil")
