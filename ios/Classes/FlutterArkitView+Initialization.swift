@@ -20,7 +20,10 @@ extension FlutterArkitView {
         self.configurationRealityKit = ARWorldTrackingConfiguration()
         
         if #available(iOS 13.4, *) {
-            self.configurationRealityKit?.sceneReconstruction = .meshWithClassification
+            
+            if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
+                self.configurationRealityKit?.sceneReconstruction = .meshWithClassification
+            }
             
             self.configurationRealityKit?.planeDetection = [.horizontal, .vertical]
             self.configurationRealityKit?.frameSemantics.insert(.personSegmentationWithDepth)

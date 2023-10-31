@@ -32,8 +32,17 @@ extension FlutterArkitView {
 //            let imageData = cicontext.jpegRepresentation(of: ciimage!, colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!)
             
 //            let uiimage = UIImage(data: imageData)?.
-            let image = UIImage(cgImage: cgImage!, scale: 0.5, orientation: .downMirrored)
-            self.bytes = image.jpegData(compressionQuality: 0.1)
+            let filterName = "CILanczosScaleTransform"
+            let filter = CIFilter(name: filterName)
+            filter?.setValue(ciimage, forKey: kCIInputImageKey)
+            filter?.setValue(0.4, forKey: kCIInputScaleKey)
+            
+            let filterResult = filter?.outputImage
+            
+            
+//            let image = UIImage(cgImage: cgImage!, scale: 0.5, orientation: .downMirrored)
+            let image = UIImage(ciImage: filterResult!, scale: 1.0, orientation: .downMirrored)
+            self.bytes = image.jpegData(compressionQuality: 0.8)
             self.capturing = false
             
 //            NSLog("postProcess Task Run")
