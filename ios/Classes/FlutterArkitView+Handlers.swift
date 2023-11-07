@@ -6,44 +6,30 @@ extension FlutterArkitView {
     func onAddNode(_ arguments: Dictionary<String, Any>) {
         NSLog("onAddNode -- START")
         let geometryArguments = arguments["geometry"] as? Dictionary<String, Any>
+
+        var scnmat4: SCNMatrix4?
+        var trans: float4x4?
+        if let transform = arguments["transform"] as? Array<NSNumber> {
+            scnmat4 = deserializeMatrix4(transform)
+            trans = simd_float4x4(scnmat4!)
+        }
+        
+        let anchorEntity = createAnchorEntity(geoArg: geometryArguments, trans: trans)
+        
+        // if Success create entity, end func
+        if let entity = anchorEntity {
+            FlutterArkitView.arView!.scene.anchors.append(entity)
+            return
+        } 
         
         
         let geometry = createGeometry(geometryArguments)
         let node = createNode(geometry, fromDict: arguments)
+        
             
-        var fileName: String?
-        
-        if let geoarguments = geometryArguments {
-            let fileName = geoarguments["url"]
-            let dartType = geoarguments["dartType"] as! String
-            NSLog("[onAddNode] dartType \(dartType)")
-           
-            if dartType == "ARKitText" {
-                let text = geoarguments["text"] as! String
-                let extrusionDepth = geoarguments["extrusionDepth"] as! Float
-                let anchor = AnchorEntity()
-                let textEntity = ModelEntity(
-                    mesh: .generateText(
-                        text,
-                        extrusionDepth: extrusionDepth,
-                        font: .systemFont(ofSize: MeshResource.Font.systemFontSize, weight: .bold),
-                        containerFrame: CGRect.zero,
-                        alignment: .center,
-                        lineBreakMode: .byCharWrapping
-                    )
-                )
-                textEntity.model?.materials.append(SimpleMaterial(color: .yellow, roughness: 0.5, isMetallic: true))
-                anchor.addChild(textEntity)
-                anchor.transform.matrix = simd_float4x4(node.transform)
-                FlutterArkitView.arView!.scene.anchors.append(anchor)
-                return
-            } else if dartType == "ARKitReferenceNode" {
-                
-            }
-        }
-        
-        
-        let newAnchorEntity = RealityKitUtil.convertNodeToAnchorEntity(node: node, fileName: fileName)
+//        var fileName: String?
+//        let newAnchorEntity = RealityKitUtil.convertSCNNodeToAnchorEntity(node: node, fileName: fileName)
+        let newAnchorEntity = RealityKitUtil.convertSCNNodeToAnchorEntity(node: node)
         
         if newAnchorEntity == nil {
             NSLog("[FlutterARkitView Handlers] onAddNote newAnchorEntity is nil")

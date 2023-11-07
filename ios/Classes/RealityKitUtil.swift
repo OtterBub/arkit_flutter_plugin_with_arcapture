@@ -46,7 +46,7 @@ class RealityKitUtil {
         return entity
     }
     
-    static func convertNodeToAnchorEntity(node: SCNNode, fileName: String? = nil) -> AnchorEntity? {
+    static func convertSCNNodeToAnchorEntity(node: SCNNode, fileName: String? = nil) -> AnchorEntity? {
         let resultAnchorEntity = AnchorEntity()
         
         let newEntity = convertNodeToEntity(node: node, fileName: fileName)

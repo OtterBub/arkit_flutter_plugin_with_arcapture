@@ -30,7 +30,7 @@ func createBox(_ arguments: Dictionary<String, Any>) -> SCNBox {
     
     return SCNBox(width: CGFloat(width), height: CGFloat(height), length: CGFloat(length), chamferRadius: CGFloat(chamferRadius))
 }
-
+    
 func createLine(_ arguments: Dictionary<String, Any>) -> SCNGeometry {
     let fromVector = deserizlieVector3(arguments["fromVector"] as! Array<Double>)
     let toVector = deserizlieVector3(arguments["toVector"] as! Array<Double>)
