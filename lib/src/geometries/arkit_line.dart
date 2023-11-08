@@ -12,6 +12,7 @@ class ARKitLine extends ARKitGeometry {
   ARKitLine({
     required this.fromVector,
     required this.toVector,
+    this.upVector,
     List<ARKitMaterial>? materials,
   }) : super(
           materials: materials,
@@ -25,10 +26,11 @@ class ARKitLine extends ARKitGeometry {
   @Vector3Converter()
   final Vector3 toVector;
 
-  static ARKitLine fromJson(Map<String, dynamic> json) =>
-      _$ARKitLineFromJson(json);
+  @Vector3Converter()
+  final Vector3? upVector;
+
+  static ARKitLine fromJson(Map<String, dynamic> json) => _$ARKitLineFromJson(json);
 
   @override
-  Map<String, dynamic> toJson() =>
-      _$ARKitLineToJson(this)..addAll({'dartType': 'ARKitLine'});
+  Map<String, dynamic> toJson() => _$ARKitLineToJson(this)..addAll({'dartType': 'ARKitLine'});
 }

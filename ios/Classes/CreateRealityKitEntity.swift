@@ -7,6 +7,7 @@
 
 import Foundation
 import RealityKit
+import SceneKit
 
 func createAnchorEntity(geoArg: Dictionary<String, Any>?, trans: float4x4?) -> AnchorEntity? {
     
@@ -66,8 +67,14 @@ func createLineAnchorEntity(geoArg: Dictionary<String, Any>, trans: float4x4?) -
     let fromVector = deserizlieVector3(arguments["fromVector"] as! Array<Double>)
     let toVector = deserizlieVector3(arguments["toVector"] as! Array<Double>)
     
+    var upVector:SCNVector3?
+    if arguments.keys.contains("upVector") {
+        upVector = deserizlieVector3(arguments["upVector"] as! Array<Double>)
+    }
+    
     let convertedToVector = simd_float3(toVector)
     let convertedFromVector = simd_float3(fromVector)
+    let convertedUpVector = upVector == nil ? nil : simd_float3(upVector!)
 
     NSLog("[createLineAnchorEntity] ToVector \(convertedToVector) ")
     NSLog("[createLineAnchorEntity] FromVector \(convertedFromVector) ")
@@ -79,13 +86,15 @@ func createLineAnchorEntity(geoArg: Dictionary<String, Any>, trans: float4x4?) -
     
     let anchor = AnchorEntity()
     anchor.position = midPosition
-    anchor.look(at: convertedFromVector, from: midPosition, relativeTo: nil)
+    anchor.look(at: convertedFromVector, from: midPosition, upVector: convertedUpVector ?? SIMD3(0, 1, 0), relativeTo: nil)
     
     let meters = simd_distance(convertedFromVector, convertedToVector)
     
     let lineMaterial = SimpleMaterial(color: .red, roughness: 1, isMetallic: false)
     
-    let bottomLineMesh = MeshResource.generateBox(width: 0.025, height: 0.025/2.5, depth: meters, cornerRadius: 0.15)
+    
+    let bottomLineMesh = MeshResource.generateBox(width: 0.003, height: 0.001, depth: meters + 0.003, cornerRadius: 0.01)
+//    let bottomLineMesh = MeshResource.generatePlane(width: 0.003, depth: meters + 0.003, cornerRadius: 0.01)
     
     let bottomLineEntity = ModelEntity(mesh: bottomLineMesh, materials: [lineMaterial])
     
