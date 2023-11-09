@@ -44,16 +44,16 @@ class _testViewerState extends State<testViewer> {
 
   int indexCount = 0;
   Future<bool> updateFrame() async {
-    await Future.delayed(Duration(milliseconds: 15));
+    await Future.delayed(Duration(milliseconds: 3));
     if (isDispose) return false;
     if (arkitController != null) {
       try {
         var image = (await arkitController!.snapshot(compressionQuality: 0.5)) as MemoryImage;
-        if (imageList.length < 3) {
+        if (imageList.length < 6) {
           imageList.add(image);
         } else {
-          indexCount = (indexCount + 1) % 3;
           imageList[indexCount] = image;
+          indexCount = (indexCount + 1) % 6;
         }
       } catch (e) {
         log("snapshot error: $e");
@@ -73,7 +73,7 @@ class _testViewerState extends State<testViewer> {
       ARKitSceneView(onARKitViewCreated: onARKitViewCreated),
       SizedBox.fromSize(
           size: Size(1000, 1000),
-          child: imageList.length < 3
+          child: imageList.length < 6
               ? ColoredBox(color: Colors.black)
               : IndexedStack(
                   index: indexCount,
@@ -81,6 +81,9 @@ class _testViewerState extends State<testViewer> {
                     Image(image: imageList[0]),
                     Image(image: imageList[1]),
                     Image(image: imageList[2]),
+                    Image(image: imageList[3]),
+                    Image(image: imageList[4]),
+                    Image(image: imageList[5]),
                   ],
                 )),
       Column(
