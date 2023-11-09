@@ -71,6 +71,7 @@ class RealityKitUtil {
             
             let exportUrl = URL(fileURLWithPath: documentsPath + "/\(name)" + ( nodeGeo!.materials.isEmpty ? ".usdc" : ".obj"))
             
+            // Check already export this model
             let fileManager = FileManager.default
             if fileManager.fileExists(atPath: exportUrl.path) == false {
                 do {
