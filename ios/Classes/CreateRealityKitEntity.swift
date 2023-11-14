@@ -72,6 +72,12 @@ func createLineAnchorEntity(geoArg: Dictionary<String, Any>, trans: float4x4?) -
         upVector = deserizlieVector3(arguments["upVector"] as! Array<Double>)
     }
     
+    var thickness:Double?
+    if arguments.keys.contains("thickness") {
+        thickness = (arguments["thickness"] as! Double)
+    }
+        
+    
     let convertedToVector = simd_float3(toVector)
     let convertedFromVector = simd_float3(fromVector)
     let convertedUpVector = upVector == nil ? nil : simd_float3(upVector!)
@@ -93,7 +99,7 @@ func createLineAnchorEntity(geoArg: Dictionary<String, Any>, trans: float4x4?) -
     let lineMaterial = SimpleMaterial(color: .red, roughness: 1, isMetallic: false)
     
     
-    let bottomLineMesh = MeshResource.generateBox(width: 0.003, height: 0.001, depth: meters + 0.003, cornerRadius: 0.01)
+    let bottomLineMesh = MeshResource.generateBox(width: Float(0.003 * (thickness ?? 1)), height: 0.001, depth: meters + 0.003, cornerRadius: 0.01)
 //    let bottomLineMesh = MeshResource.generatePlane(width: 0.003, depth: meters + 0.003, cornerRadius: 0.01)
     
     let bottomLineEntity = ModelEntity(mesh: bottomLineMesh, materials: [lineMaterial])
@@ -101,6 +107,7 @@ func createLineAnchorEntity(geoArg: Dictionary<String, Any>, trans: float4x4?) -
 //    bottomLineEntity.position = .init(0, 0, 0)
     anchor.addChild(bottomLineEntity)
     
+    NSLog("[createLineAnchorEntity] thickness: \(String(describing: thickness))")
     NSLog("createLineAnchorEntity - END")
     return anchor
 }

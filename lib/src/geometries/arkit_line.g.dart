@@ -11,6 +11,7 @@ ARKitLine _$ARKitLineFromJson(Map json) => ARKitLine(
       toVector: const Vector3Converter().fromJson(json['toVector'] as List),
       upVector: _$JsonConverterFromJson<List<dynamic>, Vector3>(
           json['upVector'], const Vector3Converter().fromJson),
+      thickness: (json['thickness'] as num?)?.toDouble(),
       materials: (json['materials'] as List<dynamic>?)
           ?.map((e) => ARKitMaterial.fromJson(e as Map))
           .toList(),
@@ -33,6 +34,7 @@ Map<String, dynamic> _$ARKitLineToJson(ARKitLine instance) {
       'upVector',
       _$JsonConverterToJson<List<dynamic>, Vector3>(
           instance.upVector, const Vector3Converter().toJson));
+  writeNotNull('thickness', instance.thickness);
   return val;
 }
 

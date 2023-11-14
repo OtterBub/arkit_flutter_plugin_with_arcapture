@@ -13,6 +13,7 @@ class ARKitLine extends ARKitGeometry {
     required this.fromVector,
     required this.toVector,
     this.upVector,
+    this.thickness,
     List<ARKitMaterial>? materials,
   }) : super(
           materials: materials,
@@ -28,6 +29,9 @@ class ARKitLine extends ARKitGeometry {
 
   @Vector3Converter()
   final Vector3? upVector;
+
+  @DoubleValueNotifierConverter()
+  final double? thickness;
 
   static ARKitLine fromJson(Map<String, dynamic> json) => _$ARKitLineFromJson(json);
 
