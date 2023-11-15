@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:arkit_plugin/src/geometries/arkit_geometry.dart';
 import 'package:arkit_plugin/src/geometries/material/arkit_material.dart';
 import 'package:arkit_plugin/src/utils/json_converters.dart';
@@ -14,6 +16,7 @@ class ARKitLine extends ARKitGeometry {
     required this.toVector,
     this.upVector,
     this.thickness,
+    this.color,
     List<ARKitMaterial>? materials,
   }) : super(
           materials: materials,
@@ -32,6 +35,9 @@ class ARKitLine extends ARKitGeometry {
 
   @DoubleValueNotifierConverter()
   final double? thickness;
+
+  @NullableColorConverter()
+  final Color? color;
 
   static ARKitLine fromJson(Map<String, dynamic> json) => _$ARKitLineFromJson(json);
 

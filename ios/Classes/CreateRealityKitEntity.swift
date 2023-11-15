@@ -76,6 +76,11 @@ func createLineAnchorEntity(geoArg: Dictionary<String, Any>, trans: float4x4?) -
     if arguments.keys.contains("thickness") {
         thickness = (arguments["thickness"] as! Double)
     }
+    
+    var color:Int?
+    if arguments.keys.contains("color") {
+        color = (arguments["color"] as! Int?)
+    }
         
     
     let convertedToVector = simd_float3(toVector)
@@ -96,7 +101,8 @@ func createLineAnchorEntity(geoArg: Dictionary<String, Any>, trans: float4x4?) -
     
     let meters = simd_distance(convertedFromVector, convertedToVector)
     
-    let lineMaterial = SimpleMaterial(color: .red, roughness: 1, isMetallic: false)
+//    let lineMaterial = SimpleMaterial(color: .red, roughness: 1, isMetallic: false)
+    let lineMaterial = SimpleMaterial(color: color == nil ? .red : UIColor(rgb: UInt(color!)), roughness: 1, isMetallic: false)
     
     
     let bottomLineMesh = MeshResource.generateBox(width: Float(0.003 * (thickness ?? 1)), height: 0.001, depth: meters + 0.003, cornerRadius: 0.01)
