@@ -169,6 +169,9 @@ class FlutterArkitView: NSObject, FlutterPlatformView {
         case "cameraPosition":
             onGetCameraPosition(result)
             break
+        case "getContentViewRect":
+            onGetContentViewRect(result)
+            break
         default:
             result(FlutterMethodNotImplemented)
             break

@@ -401,4 +401,20 @@ extension FlutterArkitView {
             result(nil)
         }
      }
+    
+    func onGetContentViewRect(_ result: FlutterResult) {
+        let frame = FlutterArkitView.arView?.frame
+        if frame == nil { 
+            result(nil)
+            return
+        }
+        
+        result([
+            "left" : frame!.minX,
+            "top" : frame!.minY,
+            "right" : frame!.maxX,
+            "bottom" : frame!.maxY
+        ])
+        return
+    }
 }

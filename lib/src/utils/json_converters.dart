@@ -477,3 +477,38 @@ class Vector3ListConverter
     return res;
   }
 }
+
+class RectConverter implements JsonConverter<Rect?, Map<String, double>> {
+  const RectConverter();
+
+  @override
+  Rect? fromJson(Map<String, double> json) {
+    final left = json['left'];
+    final top = json['top'];
+    final right = json['right'];
+    final bottom = json['bottom'];
+
+    if (left is! double) return null;
+    if (top is! double) return null;
+    if (right is! double) return null;
+    if (bottom is! double) return null;
+
+    return Rect.fromLTRB(
+      left,
+      top,
+      right,
+      bottom,
+    );
+  }
+
+  @override
+  Map<String, double> toJson(Rect? object) {
+    if (object == null) return {};
+    return {
+      'left': object.left,
+      'top': object.top,
+      'right': object.right,
+      'bottom': object.bottom,
+    };
+  }
+}
